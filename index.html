@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Stallion - Kahoot Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .bg-kahoot-red { background-color: #e21b3c; }
+        .bg-kahoot-blue { background-color: #1368ce; }
+        .bg-kahoot-yellow { background-color: #d89e00; }
+        .bg-kahoot-green { background-color: #26890c; }
+        .podium-1 { height: 220px; background: linear-gradient(to bottom, #ffd700, #b8860b); border-top: 4px solid #fef08a; }
+        .podium-2 { height: 160px; background: linear-gradient(to bottom, #c0c0c0, #808080); border-top: 4px solid #e2e8f0; }
+        .podium-3 { height: 110px; background: linear-gradient(to bottom, #cd7f32, #8b4513); border-top: 4px solid #fbbf24; }
+        #qrcode-container img { margin: 0 auto; border-radius: 1rem; }
+        .loading-dots:after { content: '.'; animation: dots 1s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+
+    <script>
+        // Deine Firebase Konfiguration
+        const myFirebaseConfig = {
+            apiKey: "AIzaSyD7fZDUszAY0kmwmV6QbhqCCmQVBbF7hqw",
+            authDomain: "quiz-stallion.firebaseapp.com",
+            projectId: "quiz-stallion",
+            storageBucket: "quiz-stallion.firebasestorage.app",
+            messagingSenderId: "932417713855",
+            appId: "1:932417713855:web:1a2afd95b5484cfd82b80a",
+            measurementId: "G-SN6Q2XRHNR"
+        };
+    </script>
+
+    <div id="app">
+        <!-- Status Overlay -->
+        <div id="status-overlay" class="hidden fixed bottom-4 right-4 z-[100] bg-slate-800 border border-slate-700 p-4 rounded-2xl shadow-2xl max-w-xs text-xs">
+            <div id="status-text" class="text-slate-400">Verbindung wird aufgebaut...</div>
+        </div>
+
+        <!-- Role Selection -->
+        <div id="screen-role" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+            <h1 class="text-5xl md:text-7xl font-black mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 italic">QUIZ STALLION</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                <button id="btn-admin-role" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-purple-500 transition-all group shadow-xl">
+                    <i data-lucide="monitor" class="w-12 h-12 text-purple-500 mb-4 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold uppercase tracking-tight">Admin / Beamer</span>
+                    <p class="text-slate-400 mt-2 text-sm">Fragen präsentieren</p>
+                </button>
+                <button id="btn-player-role" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-pink-500 transition-all group shadow-xl">
+                    <i data-lucide="smartphone" class="w-12 h-12 text-pink-500 mb-4 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold uppercase tracking-tight">Teilnehmen</span>
+                    <p class="text-slate-400 mt-2 text-sm">Auf dem Handy antworten</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div id="screen-admin" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
+            <header class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-600 p-2 rounded-lg"><i data-lucide="trophy"></i></div>
+                    <h2 class="text-2xl font-bold tracking-tighter uppercase italic">Stallion Zentrale</h2>
+                </div>
+                <div class="flex gap-4">
+                    <button id="btn-admin-reset" class="px-4 py-2 bg-slate-800 rounded-lg text-sm hover:bg-slate-700 transition-colors">Reset</button>
+                    <button onclick="location.reload()" class="px-4 py-2 bg-red-900/30 text-red-400 rounded-lg text-sm hover:bg-red-900/50 transition-colors">Beenden</button>
+                </div>
+            </header>
+
+            <div id="admin-content" class="flex-1 flex flex-col items-center justify-center">
+                <!-- Lobby -->
+                <div id="admin-lobby" class="text-center w-full max-w-4xl bg-slate-800/50 p-8 md:p-12 rounded-[3rem] border border-slate-700 shadow-2xl backdrop-blur-sm">
+                    <h3 class="text-4xl font-black mb-8 text-slate-100 uppercase italic">Bereit für die Challenge?</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16">
+                        <div class="space-y-4 text-center">
+                            <div id="qrcode-container" class="p-4 bg-white rounded-3xl shadow-2xl inline-block"></div>
+                            <p class="text-xs text-slate-500 font-mono" id="debug-url"></p>
+                        </div>
+                        <div class="flex flex-col items-start gap-4 w-full md:w-auto">
+                            <div class="flex items-center gap-4 bg-slate-900 px-8 py-4 rounded-2xl border border-slate-700 w-full shadow-inner">
+                                <i data-lucide="users" class="w-8 h-8 text-blue-400"></i>
+                                <span class="text-3xl font-black"><span id="player-count">0</span> Spieler</span>
+                            </div>
+                            <div id="player-list" class="flex flex-wrap gap-2 max-w-sm mt-2 min-h-[40px]"></div>
+                            <button id="btn-admin-start" class="mt-6 w-full bg-gradient-to-r from-purple-600 to-pink-600 py-6 rounded-2xl text-2xl font-black shadow-lg hover:scale-105 transition-all uppercase tracking-tight disabled:opacity-50 disabled:cursor-not-allowed">STARTEN</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question -->
+                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                    <div class="bg-white text-slate-900 p-10 rounded-3xl shadow-2xl text-center relative border-b-8 border-slate-200">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-8 py-2 rounded-full font-bold shadow-xl">
+                            FRAGE <span id="q-number">1</span> / <span id="q-total"></span>
+                        </div>
+                        <h2 id="q-text" class="text-3xl md:text-5xl font-black leading-tight pt-4 italic"></h2>
+                    </div>
+                    <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-6 h-64"></div>
+                    <div class="flex justify-center">
+                        <button id="btn-admin-results" class="bg-white text-slate-900 px-12 py-4 rounded-2xl font-black text-xl hover:bg-slate-200 flex items-center gap-3 shadow-xl transition-all">ERGEBNIS ANZEIGEN <i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div id="admin-results" class="hidden w-full max-w-3xl bg-slate-800/50 p-10 rounded-3xl border border-slate-700 backdrop-blur-sm">
+                    <h2 class="text-4xl font-black mb-8 text-center italic uppercase tracking-widest text-slate-100">Bestenliste</h2>
+                    <div id="leaderboard-list" class="space-y-4"></div>
+                    <div class="flex justify-center mt-12">
+                        <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl">NÄCHSTE RUNDE</button>
+                    </div>
+                </div>
+
+                <!-- Podium -->
+                <div id="admin-podium" class="hidden w-full max-w-5xl text-center">
+                    <h1 class="text-5xl md:text-7xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Unsere Champions</h1>
+                    <div class="flex items-end justify-center gap-4 md:gap-12 h-96" id="podium-display"></div>
+                    <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase tracking-widest text-sm">Neues Quiz starten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player View -->
+        <div id="screen-player" class="hidden min-h-screen bg-pink-600 flex flex-col items-center justify-center p-6">
+            <div id="player-login" class="w-full max-w-sm text-center">
+                <h1 class="text-4xl font-black mb-8 italic uppercase tracking-tighter text-white">Stallion Player</h1>
+                <div class="bg-white/10 p-8 rounded-[2.5rem] backdrop-blur-md border-2 border-white/20 shadow-2xl">
+                    <input id="player-name-input" type="text" placeholder="Dein Nickname" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-4 focus:outline-none ring-pink-300 focus:ring-4 transition-all">
+                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-5 rounded-2xl text-xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-tight">OK, Los!</button>
+                </div>
+            </div>
+
+            <div id="player-wait" class="hidden text-center">
+                <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-20 h-20 text-white"></i></div>
+                <h2 class="text-3xl font-black uppercase italic">Bereit machen!</h2>
+                <p id="player-wait-text" class="text-white/80 mt-2 font-medium">Verbindung wird geprüft...</p>
+            </div>
+
+            <div id="player-game" class="hidden w-full h-full flex flex-col gap-4 fixed inset-0 p-4 bg-slate-900 z-[60]">
+                <div class="grid grid-cols-1 grid-rows-4 gap-4 flex-1">
+                    <button id="btn-ans-0" class="bg-kahoot-red rounded-2xl shadow-xl flex items-center justify-center text-6xl active:scale-90 transition-all border-b-8 border-black/30">▲</button>
+                    <button id="btn-ans-1" class="bg-kahoot-blue rounded-2xl shadow-xl flex items-center justify-center text-6xl active:scale-90 transition-all border-b-8 border-black/30">◆</button>
+                    <button id="btn-ans-2" class="bg-kahoot-yellow rounded-2xl shadow-xl flex items-center justify-center text-6xl active:scale-90 transition-all border-b-8 border-black/30">●</button>
+                    <button id="btn-ans-3" class="bg-kahoot-green rounded-2xl shadow-xl flex items-center justify-center text-6xl active:scale-90 transition-all border-b-8 border-black/30">■</button>
+                </div>
+            </div>
+
+            <div id="player-feedback" class="hidden fixed inset-0 flex flex-col items-center justify-center p-8 z-[70] animate-in zoom-in">
+                <div id="feedback-card" class="w-full max-w-sm p-12 rounded-[3rem] text-center shadow-[0_0_50px_rgba(0,0,0,0.3)]">
+                    <div id="feedback-icon" class="mb-6 mx-auto"></div>
+                    <h2 id="feedback-title" class="text-4xl font-black mb-4"></h2>
+                    <p id="feedback-points" class="text-2xl font-bold uppercase tracking-widest"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Initialisierung
+        const app = initializeApp(myFirebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = 'stallion-quiz-v3-final'; 
+
+        const QUIZ_DATA = [
+            {
+                q: "Eine Kundin möchte wissen, wie das Pixel 10a sie beim Multitasking unterstützen kann. Welches Tool ist am wichtigsten?",
+                options: ["Google Assistant", "Gemini", "Pixel Screenshots", "Gemini Nano"],
+                correct: 1, 
+                feedback: "Korrekt! Gemini ist der primäre integrierte KI-Assistent."
+            },
+            {
+                q: "Welche Softwarezusage gibt Google für das Pixel 10a?",
+                options: ["3 Jahre OS-Updates", "5 Jahre OS-Updates", "7 Jahre OS-, Sicherheitsupdates & Pixel Drops", "4 Jahre Support"],
+                correct: 2,
+                feedback: "Richtig! Ganze 7 Jahre garantierter Support inklusive Pixel Drops."
+            },
+            {
+                q: "Ein Kunde möchte bestmögliche Bildqualität bei Nacht. Welcher Modus hilft?",
+                options: ["Action-Modus", "Nachtsicht-Modus", "Panorama", "Porträtmodus"],
+                correct: 1,
+                feedback: "Ganz genau, der Nachtsicht-Modus!"
+            },
+            {
+                q: "Wie viele Jahre Sicherheitsupdates erhält die Pixel 10 Serie?",
+                options: ["5 Jahre", "7 Jahre", "10 Jahre", "Unbegrenzt"],
+                correct: 1,
+                feedback: "Korrekt, Google garantiert 7 Jahre Sicherheit!"
+            }
+        ];
+
+        let currentUser = null;
+        let players = [];
+        let gameState = {};
+        let selectedRole = null;
+
+        // Status Logger
+        function logStatus(msg, isError = false) {
+            const el = document.getElementById('status-overlay');
+            const text = document.getElementById('status-text');
+            el.classList.remove('hidden');
+            text.innerText = msg;
+            text.className = isError ? 'text-red-400 font-bold' : 'text-slate-400';
+            console.log("[Quiz Status]", msg);
+        }
+
+        // Icons initialisieren
+        lucide.createIcons();
+
+        // AUTH TRACKING
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                logStatus("Verbunden mit Firebase");
+            } else {
+                logStatus("Nicht eingeloggt", true);
+            }
+        });
+
+        // FUNKTIONEN AN WINDOW HÄNGEN (für HTML-Aufrufe)
+        window.setRole = async (role) => {
+            selectedRole = role;
+            document.getElementById('screen-role').classList.add('hidden');
+            document.getElementById(`screen-${role}`).classList.remove('hidden');
+
+            try {
+                logStatus("Logge anonym ein...");
+                await signInAnonymously(auth);
+                
+                if (role === 'admin') {
+                    const url = window.location.href;
+                    document.getElementById('debug-url').innerText = url;
+                    new QRCode(document.getElementById("qrcode-container"), {
+                        text: url, width: 220, height: 220
+                    });
+                    initAdminSync();
+                } else {
+                    initPlayerSync();
+                }
+            } catch (e) {
+                logStatus("Login fehlgeschlagen: " + e.message, true);
+            }
+        };
+
+        // ADMIN LOGIK
+        async function initAdminSync() {
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), (s) => {
+                if (s.exists()) {
+                    gameState = s.data();
+                    renderAdmin();
+                } else {
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { status: 'lobby', qIndex: -1 });
+                }
+            }, (err) => logStatus("Firestore Error (Game): " + err.message, true));
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'players'), (s) => {
+                players = s.docs.map(d => ({ id: d.id, ...d.data() }));
+                players.sort((a, b) => b.score - a.score);
+                document.getElementById('player-count').innerText = players.length;
+                document.getElementById('player-list').innerHTML = players.map(p => 
+                    `<span class="bg-slate-700/80 px-4 py-2 rounded-full text-xs font-bold border border-slate-600">${p.name}</span>`
+                ).join('');
+                document.getElementById('btn-admin-start').disabled = (players.length === 0);
+            });
+        }
+
+        async function startGame() {
+            if (!currentUser) return;
+            logStatus("Starte Quiz...");
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { 
+                status: 'question', qIndex: 0, startTime: Date.now() 
+            });
+        }
+
+        async function showResults() {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { status: 'results' });
+        }
+
+        async function nextQuestion() {
+            if (gameState.qIndex < QUIZ_DATA.length - 1) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { 
+                    status: 'question', qIndex: gameState.qIndex + 1, startTime: Date.now() 
+                });
+            } else {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { status: 'podium' });
+            }
+        }
+
+        async function resetGame() {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), { status: 'lobby', qIndex: -1 });
+            const pSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
+            for (const d of pSnap.docs) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', d.id), { score: 0, lastAnswerQ: -1 });
+            }
+        }
+
+        function renderAdmin() {
+            ['lobby', 'question', 'results', 'podium'].forEach(s => document.getElementById(`admin-${s}`).classList.add('hidden'));
+            document.getElementById(`admin-${gameState.status}`).classList.remove('hidden');
+
+            if (gameState.status === 'question') {
+                const q = QUIZ_DATA[gameState.qIndex];
+                document.getElementById('q-number').innerText = gameState.qIndex + 1;
+                document.getElementById('q-total').innerText = QUIZ_DATA.length;
+                document.getElementById('q-text').innerText = q.q;
+                const colors = ['bg-kahoot-red', 'bg-kahoot-blue', 'bg-kahoot-yellow', 'bg-kahoot-green'];
+                const shapes = ['▲', '◆', '●', '■'];
+                document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
+                    <div class="${colors[i]} p-6 rounded-2xl flex items-center gap-6 shadow-xl border-b-4 border-black/20">
+                        <span class="text-4xl font-bold">${shapes[i]}</span>
+                        <span class="text-2xl font-bold">${opt}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (gameState.status === 'results') {
+                document.getElementById('leaderboard-list').innerHTML = players.slice(0, 5).map((p, i) => `
+                    <div class="flex items-center justify-between bg-slate-700/50 p-6 rounded-2xl border-l-8 border-purple-500">
+                        <div class="flex items-center gap-6"><span class="text-xl font-black text-slate-400">#${i+1}</span><span class="text-2xl font-bold uppercase">${p.name}</span></div>
+                        <span class="text-3xl font-black text-purple-400">${p.score} Pkt</span>
+                    </div>
+                `).join('');
+            }
+
+            if (gameState.status === 'podium') {
+                const top = players.slice(0, 3);
+                document.getElementById('podium-display').innerHTML = `
+                    <div class="flex flex-col items-center"><span class="font-bold mb-2">${top[1]?.name || ''}</span><div class="w-32 podium-2 rounded-t-3xl flex items-center justify-center text-4xl font-black">2</div></div>
+                    <div class="flex flex-col items-center"><i data-lucide="medal" class="text-yellow-400 mb-2 animate-bounce"></i><span class="text-2xl font-black mb-2">${top[0]?.name || ''}</span><div class="w-40 podium-1 rounded-t-2xl flex items-center justify-center text-6xl font-black">1</div></div>
+                    <div class="flex flex-col items-center"><span class="font-bold mb-2">${top[2]?.name || ''}</span><div class="w-32 podium-3 rounded-t-2xl flex items-center justify-center text-2xl font-black">3</div></div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        // PLAYER LOGIK
+        function initPlayerSync() {
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'gameState'), (s) => {
+                if (s.exists()) {
+                    gameState = s.data();
+                    renderPlayer();
+                }
+            });
+            // Spielerliste für lokale Score-Checks abgleichen
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'players'), (s) => {
+                players = s.docs.map(d => ({ id: d.id, ...d.data() }));
+            });
+        }
+
+        async function joinGame() {
+            const name = document.getElementById('player-name-input').value.trim();
+            if (!name || !currentUser) return;
+            logStatus("Trete Spiel bei...");
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), {
+                name, score: 0, lastAnswerQ: -1
+            });
+            document.getElementById('player-login').classList.add('hidden');
+            document.getElementById('player-wait').classList.remove('hidden');
+        }
+
+        async function submitAnswer(idx) {
+            const me = players.find(p => p.id === currentUser.uid);
+            if (!me || me.lastAnswerQ === gameState.qIndex) return;
+            
+            const correct = QUIZ_DATA[gameState.qIndex].correct === idx;
+            const timeDiff = Date.now() - gameState.startTime;
+            const points = correct ? 500 + Math.max(0, Math.round(500 * (1 - timeDiff / 20000))) : 0;
+
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), {
+                score: (me.score || 0) + points,
+                lastAnswerQ: gameState.qIndex,
+                lastCorrect: correct,
+                lastPoints: points
+            });
+            document.getElementById('player-game').classList.add('hidden');
+            document.getElementById('player-wait').classList.remove('hidden');
+            document.getElementById('player-wait-text').innerText = "Antwort gesendet! Warte auf Ergebnis...";
+        }
+
+        function renderPlayer() {
+            const me = players.find(p => p.id === currentUser.uid);
+            if (!me) return;
+
+            if (gameState.status === 'lobby') {
+                document.getElementById('player-wait').classList.remove('hidden');
+                document.getElementById('player-wait-text').innerText = "Du bist drin! Warte auf den Admin...";
+                document.getElementById('player-game').classList.add('hidden');
+                document.getElementById('player-feedback').classList.add('hidden');
+            }
+
+            if (gameState.status === 'question') {
+                document.getElementById('player-wait').classList.add('hidden');
+                document.getElementById('player-feedback').classList.add('hidden');
+                if (me.lastAnswerQ === gameState.qIndex) {
+                    document.getElementById('player-game').classList.add('hidden');
+                    document.getElementById('player-wait').classList.remove('hidden');
+                    document.getElementById('player-wait-text').innerText = "Schau auf den Beamer!";
+                } else {
+                    document.getElementById('player-game').classList.remove('hidden');
+                }
+            }
+
+            if (gameState.status === 'results') {
+                document.getElementById('player-game').classList.add('hidden');
+                document.getElementById('player-wait').classList.add('hidden');
+                const card = document.getElementById('feedback-card');
+                if (me.lastCorrect) {
+                    card.className = "w-full max-w-sm p-12 rounded-[3rem] text-center bg-green-600 border-4 border-green-400";
+                    document.getElementById('feedback-title').innerText = "RICHTIG!";
+                    document.getElementById('feedback-points').innerText = `+${me.lastPoints} Pkt`;
+                } else {
+                    card.className = "w-full max-w-sm p-12 rounded-[3rem] text-center bg-red-600 border-4 border-red-400";
+                    document.getElementById('feedback-title').innerText = "FALSCH";
+                    document.getElementById('feedback-points').innerText = "Next Round!";
+                }
+                document.getElementById('player-feedback').classList.remove('hidden');
+            }
+
+            if (gameState.status === 'podium') {
+                document.getElementById('player-feedback').classList.add('hidden');
+                document.getElementById('player-wait').classList.remove('hidden');
+                document.getElementById('player-wait-text').innerHTML = `<h2 class="text-4xl font-black uppercase italic">Finish!</h2><p class="text-2xl mt-2 font-bold">${me.score} Pkt</p>`;
+            }
+        }
+
+        // BUTTON CLICK LISTENERS (Module-Sicher)
+        document.getElementById('btn-admin-role').onclick = () => window.setRole('admin');
+        document.getElementById('btn-player-role').onclick = () => window.setRole('player');
+        document.getElementById('btn-admin-start').onclick = () => startGame();
+        document.getElementById('btn-admin-results').onclick = () => showResults();
+        document.getElementById('btn-admin-next').onclick = () => nextQuestion();
+        document.getElementById('btn-admin-reset').onclick = () => resetGame();
+        document.getElementById('btn-player-join').onclick = () => joinGame();
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`btn-ans-${i}`).onclick = () => submitAnswer(i);
+        }
+
+    </script>
+</body>
+</html>

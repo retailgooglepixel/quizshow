@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Stallion - Global Edition</title>
+    <title>Quiz Stallion - Pro Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -17,13 +17,13 @@
         .podium-1 { height: 220px; background: linear-gradient(to bottom, #ffd700, #b8860b); border-top: 4px solid #fef08a; }
         .podium-2 { height: 160px; background: linear-gradient(to bottom, #c0c0c0, #808080); border-top: 4px solid #e2e8f0; }
         .podium-3 { height: 110px; background: linear-gradient(to bottom, #cd7f32, #8b4513); border-top: 4px solid #fbbf24; }
-        #qrcode-container { padding: 15px; background: white; border-radius: 1.5rem; display: inline-block; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        #qrcode-container img { margin: 0 auto; }
+        #qrcode-container { padding: 10px; background: white; border-radius: 1rem; display: inline-block; }
     </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen">
 
     <script>
+        // Deine Firebase Konfiguration
         const myFirebaseConfig = {
             apiKey: "AIzaSyD7fZDUszAY0kmwmV6QbhqCCmQVBbF7hqw",
             authDomain: "quiz-stallion.firebaseapp.com",
@@ -36,21 +36,21 @@
     </script>
 
     <div id="app">
-        <!-- Status Indicator -->
-        <div id="connection-status" class="fixed bottom-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase tracking-widest text-slate-400 border border-white/10">
-            Verbinde...
+        <!-- Status -->
+        <div id="conn-status" class="fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-red-500 border border-red-500/30">
+            Offline
         </div>
 
         <!-- Role Selection -->
         <div id="screen-role" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
             <h1 class="text-5xl md:text-7xl font-black mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 italic uppercase">Quiz Stallion</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                <button id="btn-admin-choice" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-purple-500 transition-all group shadow-xl">
+                <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-purple-500 transition-all group">
                     <i data-lucide="monitor" class="w-12 h-12 text-purple-500 mb-4 group-hover:scale-110 transition-transform"></i>
                     <span class="text-2xl font-bold uppercase">Admin-Zentrale</span>
                     <p class="text-slate-400 mt-2 text-sm italic">Auf dem Beamer öffnen</p>
                 </button>
-                <button id="btn-player-choice" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-pink-500 transition-all group shadow-xl">
+                <button id="btn-choice-player" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-pink-500 transition-all group">
                     <i data-lucide="smartphone" class="w-12 h-12 text-pink-500 mb-4 group-hover:scale-110 transition-transform"></i>
                     <span class="text-2xl font-bold uppercase">Teilnehmen</span>
                     <p class="text-slate-400 mt-2 text-sm italic">Auf dem Handy öffnen</p>
@@ -61,23 +61,23 @@
         <!-- Admin View -->
         <div id="screen-admin" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
             <header class="flex justify-between items-center mb-8">
-                <div class="flex items-center gap-3 italic">
-                    <div class="bg-purple-600 p-2 rounded-lg"><i data-lucide="trophy"></i></div>
-                    <h2 class="text-xl font-black uppercase">Stallion Control</h2>
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-600 p-2 rounded-lg shadow-lg"><i data-lucide="trophy"></i></div>
+                    <h2 class="text-2xl font-black uppercase italic">Stallion Control</h2>
                 </div>
                 <div class="flex gap-4">
-                    <button id="btn-admin-reset" class="px-4 py-2 bg-slate-700 rounded-lg text-xs font-bold uppercase">Reset</button>
-                    <button onclick="location.reload()" class="px-4 py-2 bg-red-900/30 text-red-400 rounded-lg text-xs font-bold uppercase">Stop</button>
+                    <button id="btn-admin-reset" class="px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold uppercase border border-slate-700 hover:bg-slate-700">Reset</button>
+                    <button onclick="location.reload()" class="px-4 py-2 bg-red-900/20 text-red-400 rounded-lg text-xs font-bold uppercase border border-red-900/30">Stop</button>
                 </div>
             </header>
 
             <div id="admin-content" class="flex-1 flex flex-col items-center justify-center">
                 <div id="admin-lobby" class="text-center w-full max-w-5xl bg-slate-800/50 p-8 md:p-12 rounded-[3rem] border border-slate-700 shadow-2xl backdrop-blur-sm">
-                    <h3 class="text-4xl font-black mb-10 text-slate-100 uppercase italic">Join the Pixel 10 Challenge!</h3>
+                    <h3 class="text-4xl font-black mb-10 text-slate-100 uppercase italic tracking-tighter">Join the Pixel 10 Challenge!</h3>
                     <div class="flex flex-col md:flex-row items-center justify-center gap-12">
                         <div class="text-center space-y-4">
                             <div id="qrcode-container"></div>
-                            <p id="display-url" class="text-[10px] font-mono text-purple-400 break-all max-w-[200px] mx-auto"></p>
+                            <p id="display-url" class="text-[10px] font-mono text-purple-400 break-all max-w-[200px] mx-auto opacity-50"></p>
                         </div>
                         <div class="flex flex-col items-start gap-4 flex-1">
                             <div class="bg-slate-900/80 px-8 py-6 rounded-3xl border border-slate-700 w-full shadow-inner flex items-center gap-6">
@@ -87,8 +87,8 @@
                                     <span class="text-xs uppercase text-slate-500 font-black tracking-widest">Spieler bereit</span>
                                 </div>
                             </div>
-                            <div id="player-list" class="flex flex-wrap gap-2 mt-2 min-h-[60px] w-full bg-slate-900/30 p-4 rounded-2xl"></div>
-                            <button id="btn-admin-start" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 py-6 rounded-2xl text-3xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all uppercase disabled:opacity-30">Quiz Starten</button>
+                            <div id="player-list" class="flex flex-wrap gap-2 mt-2 min-h-[60px] w-full bg-slate-900/30 p-4 rounded-2xl border border-white/5"></div>
+                            <button id="btn-admin-start" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 py-6 rounded-2xl text-3xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all uppercase disabled:opacity-30 tracking-tighter">Quiz Starten</button>
                         </div>
                     </div>
                 </div>
@@ -98,26 +98,26 @@
                         <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-10 py-3 rounded-full font-black shadow-xl">
                             FRAGE <span id="q-number">1</span> / <span id="q-total">4</span>
                         </div>
-                        <h2 id="q-text" class="text-4xl md:text-5xl font-black pt-4 italic"></h2>
+                        <h2 id="q-text" class="text-3xl md:text-5xl font-black pt-4 italic"></h2>
                     </div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-6 h-64"></div>
                     <div class="flex justify-center">
-                        <button id="btn-admin-show-results" class="bg-white text-slate-900 px-16 py-5 rounded-2xl font-black text-2xl hover:bg-slate-100 flex items-center gap-4 shadow-2xl">ERGEBNIS ANZEIGEN <i data-lucide="arrow-right-circle"></i></button>
+                        <button id="btn-admin-results" class="bg-white text-slate-900 px-16 py-5 rounded-2xl font-black text-2xl hover:bg-slate-100 flex items-center gap-4 shadow-2xl transition-all uppercase">Ergebnis anzeigen <i data-lucide="chevron-right"></i></button>
                     </div>
                 </div>
 
                 <div id="admin-results" class="hidden w-full max-w-3xl bg-slate-800/50 p-10 rounded-[3rem] border border-slate-700">
-                    <h2 class="text-4xl font-black mb-10 text-center italic uppercase">Bestenliste</h2>
+                    <h2 class="text-4xl font-black mb-10 text-center italic uppercase">Zwischenstand</h2>
                     <div id="leaderboard-list" class="space-y-4"></div>
                     <div class="flex justify-center mt-12">
-                        <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl">NÄCHSTE RUNDE</button>
+                        <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl uppercase">Nächste Runde</button>
                     </div>
                 </div>
 
                 <div id="admin-podium" class="hidden w-full max-w-5xl text-center">
-                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Unsere Champions</h1>
+                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Champions</h1>
                     <div class="flex items-end justify-center gap-4 md:gap-12 h-96" id="podium-display"></div>
-                    <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase text-sm">Quiz Neustarten</button>
+                    <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase text-xs">Neues Quiz</button>
                 </div>
             </div>
         </div>
@@ -125,17 +125,17 @@
         <!-- Player View -->
         <div id="screen-player" class="hidden min-h-screen bg-pink-600 flex flex-col items-center justify-center p-6">
             <div id="player-login" class="w-full max-w-sm text-center">
-                <h1 class="text-4xl font-black mb-8 italic uppercase text-white">Stallion Player</h1>
+                <h1 class="text-4xl font-black mb-8 italic uppercase text-white tracking-tighter">Stallion Player</h1>
                 <div class="bg-white/10 p-8 rounded-[2.5rem] backdrop-blur-md border-2 border-white/20 shadow-2xl">
                     <input id="player-name-input" type="text" placeholder="Dein Nickname" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-pink-300 focus:ring-4 transition-all">
-                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Beitreten</button>
+                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">OK, Los!</button>
                 </div>
             </div>
 
             <div id="player-wait" class="hidden text-center">
                 <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-24 h-24 text-white"></i></div>
                 <h2 class="text-4xl font-black uppercase italic">Du bist dabei!</h2>
-                <p id="player-status-msg" class="text-white/80 mt-2 font-medium">Blick zum Beamer!</p>
+                <p class="text-white/80 mt-2 font-medium">Blick zum Beamer...</p>
             </div>
 
             <div id="player-game" class="hidden w-full h-full flex flex-col gap-4 fixed inset-0 p-4 bg-slate-950 z-[100]">
@@ -150,7 +150,7 @@
             <div id="player-feedback" class="hidden fixed inset-0 flex flex-col items-center justify-center p-8 z-[110]">
                 <div id="feedback-card" class="w-full max-w-sm p-12 rounded-[3.5rem] text-center shadow-2xl">
                     <div id="feedback-icon" class="mb-6 mx-auto"></div>
-                    <h2 id="feedback-title" class="text-5xl font-black mb-4"></h2>
+                    <h2 id="feedback-title" class="text-5xl font-black mb-4 uppercase"></h2>
                     <p id="feedback-points" class="text-2xl font-bold uppercase"></p>
                 </div>
             </div>
@@ -162,36 +162,39 @@
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Firebase Init
         const app = initializeApp(myFirebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = 'stallion-quiz-global-v1'; 
+        
+        // KRITISCH: Pfad muss 6-teilig sein für Dokumente
+        const appId = 'stallion-quiz-final-v5'; // Geänderte ID zur Sicherheit
+        const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'global', 'state');
+        const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
         const QUIZ_DATA = [
             {
-                q: "Eine Kundin möchte wissen, wie das Pixel 10a sie beim Multitasking unterstützen kann. Welches Tool ist am wichtigsten?",
-                options: ["Google Assistant", "Gemini", "Pixel Screenshots", "Gemini Nano"],
+                q: "Welches Tool hilft der Kundin am meisten beim Multitasking am Pixel 10a?",
+                options: ["Assistant", "Gemini", "Screenshots", "Nano"],
                 correct: 1, 
-                feedback: "Korrekt! Gemini ist der primäre integrierte KI-Assistent."
+                feedback: "Korrekt! Gemini ist der primäre KI-Assistent."
             },
             {
                 q: "Welche Softwarezusage gibt Google für das Pixel 10a?",
-                options: ["3 Jahre OS-Updates", "5 Jahre OS-Updates", "7 Jahre OS-, Sicherheitsupdates & Pixel Drops", "4 Jahre Support"],
+                options: ["3 Jahre", "5 Jahre", "7 Jahre", "4 Jahre"],
                 correct: 2,
-                feedback: "Richtig! Ganze 7 Jahre garantierter Support inklusive Pixel Drops."
+                feedback: "Richtig! 7 Jahre Support garantiert."
             },
             {
-                q: "Ein Kunde möchte bestmögliche Bildqualität bei Nacht. Welcher Modus hilft?",
-                options: ["Action-Modus", "Nachtsicht-Modus", "Panorama", "Porträtmodus"],
+                q: "Beste Bildqualität bei Nacht?",
+                options: ["Action", "Nachtsicht", "Panorama", "Porträt"],
                 correct: 1,
-                feedback: "Ganz genau, der Nachtsicht-Modus!"
+                feedback: "Ganz genau, Nachtsicht-Modus!"
             },
             {
                 q: "Wie viele Jahre Sicherheitsupdates erhält die Pixel 10 Serie?",
-                options: ["5 Jahre", "7 Jahre", "10 Jahre", "Unbegrenzt"],
+                options: ["5", "7", "10", "Unbegrenzt"],
                 correct: 1,
-                feedback: "Korrekt, Google garantiert 7 Jahre Sicherheit!"
+                feedback: "Korrekt, 7 Jahre!"
             }
         ];
 
@@ -202,101 +205,89 @@
 
         lucide.createIcons();
 
-        // 1. AUTHENTICATION FIRST
-        const authReady = new Promise((resolve) => {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('connection-status').innerText = 'Online';
-                    document.getElementById('connection-status').classList.replace('text-slate-400', 'text-green-400');
-                    resolve(user);
-                } else {
-                    signInAnonymously(auth).catch(e => console.error("Auth Error", e));
-                }
-            });
+        // 1. Authentifizierung abwarten
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('conn-status').innerText = 'Online';
+                document.getElementById('conn-status').className = 'fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-green-500 border border-green-500/30';
+                if (myRole) initSync();
+            } else {
+                signInAnonymously(auth).catch(console.error);
+            }
         });
 
-        // 2. SET ROLE FUNCTION
+        // 2. Rollen-Wahl
         window.setRole = async (role) => {
-            await authReady; // Wait for user to be logged in
             myRole = role;
             document.getElementById('screen-role').classList.add('hidden');
             document.getElementById(`screen-${role}`).classList.remove('hidden');
 
             if (role === 'admin') {
-                const url = window.location.href.startsWith('file:') ? "ONLINE HOSTEN!" : window.location.href;
+                const url = window.location.href.startsWith('file:') ? "HOSTEN!" : window.location.href;
                 document.getElementById('display-url').innerText = url;
                 new QRCode(document.getElementById("qrcode-container"), {
-                    text: url, width: 200, height: 200
+                    text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L
                 });
-                initSync();
-            } else {
-                initSync();
             }
+            
+            if (currentUser) initSync();
         };
 
-        // 3. CENTRAL SYNC (Guarded by User)
+        // 3. Synchronisation (ERST NACH AUTH + ROLLENWAHL)
         function initSync() {
             if (!currentUser) return;
 
-            // Correct Path with even segments (6): artifacts / appId / public / data / game / state
-            const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'game', 'state');
-            
-            onSnapshot(gameDocRef, (s) => {
+            // Globaler Game State
+            onSnapshot(gameRef, (s) => {
                 if (s.exists()) {
                     gameState = s.data();
                     if (myRole === 'admin') renderAdmin();
                     else renderPlayer();
                 } else if (myRole === 'admin') {
-                    // Initialize state if missing
-                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
+                    setDoc(gameRef, { status: 'lobby', qIndex: -1 });
                 }
-            }, (err) => console.error("Sync Error State:", err));
+            }, (e) => console.error("Game Sync Error:", e));
 
-            // Collection Path (5 segments): artifacts / appId / public / data / players
-            const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-            onSnapshot(playersColRef, (s) => {
+            // Spieler Liste
+            onSnapshot(playersRef, (s) => {
                 players = s.docs.map(d => ({ id: d.id, ...d.data() }));
                 players.sort((a, b) => b.score - a.score);
                 if (myRole === 'admin') renderAdmin();
                 else renderPlayer();
-            }, (err) => console.error("Sync Error Players:", err));
+            }, (e) => console.error("Player Sync Error:", e));
         }
 
-        // 4. ADMIN ACTIONS
+        // 4. Admin Logik
         async function startGame() {
             if (!currentUser) return;
-            const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'game', 'state');
-            await updateDoc(gameDocRef, { status: 'question', qIndex: 0, startTime: Date.now() });
+            await updateDoc(gameRef, { status: 'question', qIndex: 0, startTime: Date.now() });
         }
         async function showResults() {
-            const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'game', 'state');
-            await updateDoc(gameDocRef, { status: 'results' });
+            await updateDoc(gameRef, { status: 'results' });
         }
         async function nextQuestion() {
-            const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'game', 'state');
             if (gameState.qIndex < QUIZ_DATA.length - 1) {
-                await updateDoc(gameDocRef, { status: 'question', qIndex: gameState.qIndex + 1, startTime: Date.now() });
+                await updateDoc(gameRef, { status: 'question', qIndex: gameState.qIndex + 1, startTime: Date.now() });
             } else {
-                await updateDoc(gameDocRef, { status: 'podium' });
+                await updateDoc(gameRef, { status: 'podium' });
             }
         }
         async function resetGame() {
-            const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'game', 'state');
-            await updateDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
-            const pColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-            const pSnap = await getDocs(pColRef);
+            await updateDoc(gameRef, { status: 'lobby', qIndex: -1 });
+            const pSnap = await getDocs(playersRef);
             for (const d of pSnap.docs) {
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', d.id), { score: 0, lastAnswerQ: -1 });
             }
         }
 
-        // 5. PLAYER ACTIONS
+        // 5. Player Logik
         async function joinGame() {
             const name = document.getElementById('player-name-input').value.trim();
             if (!name || !currentUser) return;
-            const myPlayerRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
-            await setDoc(myPlayerRef, { name, score: 0, lastAnswerQ: -1 });
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), { 
+                name, score: 0, lastAnswerQ: -1 
+            });
             document.getElementById('player-login').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
@@ -305,19 +296,18 @@
             const me = players.find(p => p.id === currentUser.uid);
             if (!me || me.lastAnswerQ === gameState.qIndex) return;
             const correct = QUIZ_DATA[gameState.qIndex].correct === idx;
-            const points = correct ? 500 + Math.max(0, Math.round(500 * (1 - (Date.now() - gameState.startTime) / 20000))) : 0;
-            const myPlayerRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
-            await updateDoc(myPlayerRef, { 
-                score: (me.score || 0) + points, 
+            const pts = correct ? 500 + Math.max(0, Math.round(500 * (1 - (Date.now() - gameState.startTime) / 20000))) : 0;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), { 
+                score: (me.score || 0) + pts, 
                 lastAnswerQ: gameState.qIndex, 
                 lastCorrect: correct, 
-                lastPoints: points 
+                lastPoints: pts 
             });
             document.getElementById('player-game').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
 
-        // 6. RENDER LOGIC
+        // 6. UI Updates
         function renderAdmin() {
             ['lobby', 'question', 'results', 'podium'].forEach(s => document.getElementById(`admin-${s}`).classList.add('hidden'));
             document.getElementById(`admin-${gameState.status}`).classList.remove('hidden');
@@ -325,7 +315,7 @@
             if (gameState.status === 'lobby') {
                 document.getElementById('player-count').innerText = players.length;
                 document.getElementById('player-list').innerHTML = players.map(p => 
-                    `<span class="bg-slate-700 px-4 py-2 rounded-xl text-xs font-black border border-slate-600">${p.name}</span>`
+                    `<span class="bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold border border-slate-600">${p.name}</span>`
                 ).join('');
                 document.getElementById('btn-admin-start').disabled = players.length === 0;
             }
@@ -354,8 +344,8 @@
                 const top = players.slice(0, 3);
                 document.getElementById('podium-display').innerHTML = `
                     <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[1]?.name || '-'}</span><div class="w-32 md:w-48 podium-2 rounded-t-[2.5rem] flex items-center justify-center text-6xl font-black">2</div></div>
-                    <div class="flex flex-col items-center"><i data-lucide="medal" class="text-yellow-400 mb-4 animate-bounce"></i><span class="text-4xl font-black mb-4 text-yellow-400">${top[0]?.name || '-'}</span><div class="w-48 md:w-64 podium-1 rounded-t-[2.5rem] flex items-center justify-center text-8xl font-black">1</div></div>
-                    <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[2]?.name || '-'}</span><div class="w-32 md:w-48 podium-3 rounded-t-[2.5rem] flex items-center justify-center text-4xl font-black">3</div></div>
+                    <div class="flex flex-col items-center"><i data-lucide="medal" class="text-yellow-400 mb-4 animate-bounce"></i><span class="text-4xl font-black mb-4 text-yellow-400">${top[0]?.name || '-'}</span><div class="w-48 md:w-64 podium-1 rounded-t-[2.5rem] flex items-center justify-center text-8xl font-black shadow-2xl">1</div></div>
+                    <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[2]?.name || '-'}</span><div class="w-32 md:w-48 podium-3 rounded-t-[2.5rem] flex items-center justify-center text-4xl font-black shadow-2xl">3</div></div>
                 `;
                 lucide.createIcons();
             }
@@ -364,21 +354,11 @@
         function renderPlayer() {
             const me = players.find(p => p.id === currentUser.uid);
             if (!me) return;
-
-            if (gameState.status === 'lobby') {
-                document.getElementById('player-wait').classList.remove('hidden');
-                document.getElementById('player-game').classList.add('hidden');
-                document.getElementById('player-feedback').classList.add('hidden');
-            }
             if (gameState.status === 'question') {
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('player-feedback').classList.add('hidden');
-                if (me.lastAnswerQ === gameState.qIndex) { 
-                    document.getElementById('player-game').classList.add('hidden'); 
-                    document.getElementById('player-wait').classList.remove('hidden'); 
-                } else { 
-                    document.getElementById('player-game').classList.remove('hidden'); 
-                }
+                if (me.lastAnswerQ === gameState.qIndex) { document.getElementById('player-game').classList.add('hidden'); document.getElementById('player-wait').classList.remove('hidden'); }
+                else { document.getElementById('player-game').classList.remove('hidden'); }
             }
             if (gameState.status === 'results') {
                 document.getElementById('player-game').classList.add('hidden');
@@ -391,7 +371,7 @@
                 } else {
                     card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-red-600 border-b-8 border-red-800";
                     document.getElementById('feedback-title').innerText = "FALSCH";
-                    document.getElementById('feedback-points').innerText = "WEITER GEHT'S!";
+                    document.getElementById('feedback-points').innerText = "WEITER!";
                 }
                 document.getElementById('player-feedback').classList.remove('hidden');
             }
@@ -402,14 +382,14 @@
             }
         }
 
-        // 7. EVENT LISTENERS
-        document.getElementById('btn-admin-choice').onclick = () => window.setRole('admin');
-        document.getElementById('btn-player-choice').onclick = () => window.setRole('player');
-        document.getElementById('btn-admin-start').onclick = () => startGame();
-        document.getElementById('btn-admin-show-results').onclick = () => showResults();
-        document.getElementById('btn-admin-next').onclick = () => nextQuestion();
-        document.getElementById('btn-admin-reset').onclick = () => resetGame();
-        document.getElementById('btn-player-join').onclick = () => joinGame();
+        // 7. Event Listener
+        document.getElementById('btn-choice-admin').onclick = () => window.setRole('admin');
+        document.getElementById('btn-choice-player').onclick = () => window.setRole('player');
+        document.getElementById('btn-admin-start').onclick = startGame;
+        document.getElementById('btn-admin-results').onclick = showResults;
+        document.getElementById('btn-admin-next').onclick = nextQuestion;
+        document.getElementById('btn-admin-reset').onclick = resetGame;
+        document.getElementById('btn-player-join').onclick = joinGame;
         for (let i = 0; i < 4; i++) {
             document.getElementById(`btn-ans-${i}`).onclick = () => submitAnswer(i);
         }

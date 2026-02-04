@@ -38,22 +38,22 @@
     <div id="app">
         <!-- Status -->
         <div id="conn-status" class="fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-red-500 border border-red-500/30">
-            Offline
+            Initialisierung...
         </div>
 
         <!-- Role Selection -->
         <div id="screen-role" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-            <h1 class="text-5xl md:text-7xl font-black mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 italic uppercase">Quiz Stallion</h1>
+            <h1 class="text-5xl md:text-7xl font-black mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 italic uppercase tracking-tighter">Quiz Stallion</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
                 <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-purple-500 transition-all group">
                     <i data-lucide="monitor" class="w-12 h-12 text-purple-500 mb-4 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-2xl font-bold uppercase">Admin-Zentrale</span>
-                    <p class="text-slate-400 mt-2 text-sm italic">Auf dem Beamer öffnen</p>
+                    <span class="text-2xl font-bold uppercase tracking-tight">Admin-Zentrale</span>
+                    <p class="text-slate-400 mt-2 text-sm italic">Präsentieren am Beamer</p>
                 </button>
                 <button id="btn-choice-player" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-pink-500 transition-all group">
                     <i data-lucide="smartphone" class="w-12 h-12 text-pink-500 mb-4 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-2xl font-bold uppercase">Teilnehmen</span>
-                    <p class="text-slate-400 mt-2 text-sm italic">Auf dem Handy öffnen</p>
+                    <span class="text-2xl font-bold uppercase tracking-tight">Mitspielen</span>
+                    <p class="text-slate-400 mt-2 text-sm italic">Teilnahme am Handy</p>
                 </button>
             </div>
         </div>
@@ -63,17 +63,17 @@
             <header class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
                     <div class="bg-purple-600 p-2 rounded-lg shadow-lg"><i data-lucide="trophy"></i></div>
-                    <h2 class="text-2xl font-black uppercase italic">Stallion Control</h2>
+                    <h2 class="text-2xl font-black uppercase italic tracking-tighter">Stallion Control</h2>
                 </div>
                 <div class="flex gap-4">
-                    <button id="btn-admin-reset" class="px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold uppercase border border-slate-700 hover:bg-slate-700">Reset</button>
+                    <button id="btn-admin-reset" class="px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold uppercase border border-slate-700 hover:bg-slate-700">Quiz Reset</button>
                     <button onclick="location.reload()" class="px-4 py-2 bg-red-900/20 text-red-400 rounded-lg text-xs font-bold uppercase border border-red-900/30">Stop</button>
                 </div>
             </header>
 
             <div id="admin-content" class="flex-1 flex flex-col items-center justify-center">
                 <div id="admin-lobby" class="text-center w-full max-w-5xl bg-slate-800/50 p-8 md:p-12 rounded-[3rem] border border-slate-700 shadow-2xl backdrop-blur-sm">
-                    <h3 class="text-4xl font-black mb-10 text-slate-100 uppercase italic tracking-tighter">Join the Pixel 10 Challenge!</h3>
+                    <h3 class="text-4xl font-black mb-10 text-slate-100 uppercase italic">Pixel 10 Challenge Lobby</h3>
                     <div class="flex flex-col md:flex-row items-center justify-center gap-12">
                         <div class="text-center space-y-4">
                             <div id="qrcode-container"></div>
@@ -84,16 +84,16 @@
                                 <i data-lucide="users" class="w-10 h-10 text-blue-400"></i>
                                 <div>
                                     <span class="text-5xl font-black block text-white" id="player-count">0</span>
-                                    <span class="text-xs uppercase text-slate-500 font-black tracking-widest">Spieler bereit</span>
+                                    <span class="text-xs uppercase text-slate-500 font-black tracking-widest">Spieler online</span>
                                 </div>
                             </div>
                             <div id="player-list" class="flex flex-wrap gap-2 mt-2 min-h-[60px] w-full bg-slate-900/30 p-4 rounded-2xl border border-white/5"></div>
-                            <button id="btn-admin-start" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 py-6 rounded-2xl text-3xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all uppercase disabled:opacity-30 tracking-tighter">Quiz Starten</button>
+                            <button id="btn-admin-start" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 py-6 rounded-2xl text-3xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all uppercase disabled:opacity-30 tracking-tighter">Starten</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8">
+                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8 animate-in fade-in duration-500">
                     <div class="bg-white text-slate-900 p-12 rounded-[2.5rem] shadow-2xl text-center relative border-b-8 border-slate-200">
                         <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-10 py-3 rounded-full font-black shadow-xl">
                             FRAGE <span id="q-number">1</span> / <span id="q-total">4</span>
@@ -102,7 +102,7 @@
                     </div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-6 h-64"></div>
                     <div class="flex justify-center">
-                        <button id="btn-admin-results" class="bg-white text-slate-900 px-16 py-5 rounded-2xl font-black text-2xl hover:bg-slate-100 flex items-center gap-4 shadow-2xl transition-all uppercase">Ergebnis anzeigen <i data-lucide="chevron-right"></i></button>
+                        <button id="btn-admin-results" class="bg-white text-slate-900 px-16 py-5 rounded-2xl font-black text-2xl hover:bg-slate-100 flex items-center gap-4 shadow-2xl transition-all uppercase">Antworten auflösen <i data-lucide="chevron-right"></i></button>
                     </div>
                 </div>
 
@@ -110,14 +110,14 @@
                     <h2 class="text-4xl font-black mb-10 text-center italic uppercase">Zwischenstand</h2>
                     <div id="leaderboard-list" class="space-y-4"></div>
                     <div class="flex justify-center mt-12">
-                        <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl uppercase">Nächste Runde</button>
+                        <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl uppercase">Nächste Frage</button>
                     </div>
                 </div>
 
                 <div id="admin-podium" class="hidden w-full max-w-5xl text-center">
-                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Champions</h1>
+                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Das Podium</h1>
                     <div class="flex items-end justify-center gap-4 md:gap-12 h-96" id="podium-display"></div>
-                    <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase text-xs">Neues Quiz</button>
+                    <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase text-xs">Beenden</button>
                 </div>
             </div>
         </div>
@@ -127,14 +127,14 @@
             <div id="player-login" class="w-full max-w-sm text-center">
                 <h1 class="text-4xl font-black mb-8 italic uppercase text-white tracking-tighter">Stallion Player</h1>
                 <div class="bg-white/10 p-8 rounded-[2.5rem] backdrop-blur-md border-2 border-white/20 shadow-2xl">
-                    <input id="player-name-input" type="text" placeholder="Dein Nickname" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-pink-300 focus:ring-4 transition-all">
-                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">OK, Los!</button>
+                    <input id="player-name-input" type="text" placeholder="Dein Name" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-pink-300 focus:ring-4 transition-all" maxLength="12">
+                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Spiel beitreten</button>
                 </div>
             </div>
 
-            <div id="player-wait" class="hidden text-center">
+            <div id="player-wait" class="hidden text-center animate-in fade-in duration-300">
                 <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-24 h-24 text-white"></i></div>
-                <h2 class="text-4xl font-black uppercase italic">Du bist dabei!</h2>
+                <h2 class="text-4xl font-black uppercase italic">Du bist drin!</h2>
                 <p class="text-white/80 mt-2 font-medium">Blick zum Beamer...</p>
             </div>
 
@@ -166,10 +166,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // KRITISCH: Pfad muss 6-teilig sein für Dokumente
-        const appId = 'stallion-quiz-final-v5'; // Geänderte ID zur Sicherheit
-        const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'global', 'state');
-        const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
+        // KRITISCH: Pfad muss 6-teilig sein für Dokumente (Rule 1)
+        const appId = 'stallion-v6-stable'; 
+        const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
+        const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
         const QUIZ_DATA = [
             {
@@ -205,19 +205,20 @@
 
         lucide.createIcons();
 
-        // 1. Authentifizierung abwarten
+        // 1. Authentifizierung abwarten (Rule 3)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('conn-status').innerText = 'Online';
-                document.getElementById('conn-status').className = 'fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-green-500 border border-green-500/30';
+                const statusEl = document.getElementById('conn-status');
+                statusEl.innerText = 'Verbunden';
+                statusEl.className = 'fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-green-500 border border-green-500/30';
                 if (myRole) initSync();
             } else {
-                signInAnonymously(auth).catch(console.error);
+                signInAnonymously(auth).catch(e => console.error("Firebase Login Fehler:", e));
             }
         });
 
-        // 2. Rollen-Wahl
+        // 2. Rollen-Wahl (Startet Sync erst, wenn Rolle feststeht)
         window.setRole = async (role) => {
             myRole = role;
             document.getElementById('screen-role').classList.add('hidden');
@@ -238,44 +239,44 @@
         function initSync() {
             if (!currentUser) return;
 
-            // Globaler Game State
-            onSnapshot(gameRef, (s) => {
+            // Globaler Game State (6 Segmente: artifacts/appId/public/data/gameSession/mainState)
+            onSnapshot(gameDocRef, (s) => {
                 if (s.exists()) {
                     gameState = s.data();
                     if (myRole === 'admin') renderAdmin();
                     else renderPlayer();
                 } else if (myRole === 'admin') {
-                    setDoc(gameRef, { status: 'lobby', qIndex: -1 });
+                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
                 }
-            }, (e) => console.error("Game Sync Error:", e));
+            }, (e) => console.error("Game Sync Fehler:", e));
 
-            // Spieler Liste
-            onSnapshot(playersRef, (s) => {
+            // Spieler Liste (5 Segmente: artifacts/appId/public/data/players)
+            onSnapshot(playersColRef, (s) => {
                 players = s.docs.map(d => ({ id: d.id, ...d.data() }));
                 players.sort((a, b) => b.score - a.score);
                 if (myRole === 'admin') renderAdmin();
                 else renderPlayer();
-            }, (e) => console.error("Player Sync Error:", e));
+            }, (e) => console.error("Player Sync Fehler:", e));
         }
 
         // 4. Admin Logik
         async function startGame() {
             if (!currentUser) return;
-            await updateDoc(gameRef, { status: 'question', qIndex: 0, startTime: Date.now() });
+            await updateDoc(gameDocRef, { status: 'question', qIndex: 0, startTime: Date.now() });
         }
         async function showResults() {
-            await updateDoc(gameRef, { status: 'results' });
+            await updateDoc(gameDocRef, { status: 'results' });
         }
         async function nextQuestion() {
             if (gameState.qIndex < QUIZ_DATA.length - 1) {
-                await updateDoc(gameRef, { status: 'question', qIndex: gameState.qIndex + 1, startTime: Date.now() });
+                await updateDoc(gameDocRef, { status: 'question', qIndex: gameState.qIndex + 1, startTime: Date.now() });
             } else {
-                await updateDoc(gameRef, { status: 'podium' });
+                await updateDoc(gameDocRef, { status: 'podium' });
             }
         }
         async function resetGame() {
-            await updateDoc(gameRef, { status: 'lobby', qIndex: -1 });
-            const pSnap = await getDocs(playersRef);
+            await updateDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
+            const pSnap = await getDocs(playersColRef);
             for (const d of pSnap.docs) {
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', d.id), { score: 0, lastAnswerQ: -1 });
             }
@@ -285,9 +286,9 @@
         async function joinGame() {
             const name = document.getElementById('player-name-input').value.trim();
             if (!name || !currentUser) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), { 
-                name, score: 0, lastAnswerQ: -1 
-            });
+            // Document reference for single player (6 segments)
+            const pDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
+            await setDoc(pDocRef, { name, score: 0, lastAnswerQ: -1 });
             document.getElementById('player-login').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
@@ -297,7 +298,8 @@
             if (!me || me.lastAnswerQ === gameState.qIndex) return;
             const correct = QUIZ_DATA[gameState.qIndex].correct === idx;
             const pts = correct ? 500 + Math.max(0, Math.round(500 * (1 - (Date.now() - gameState.startTime) / 20000))) : 0;
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid), { 
+            const pDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
+            await updateDoc(pDocRef, { 
                 score: (me.score || 0) + pts, 
                 lastAnswerQ: gameState.qIndex, 
                 lastCorrect: correct, 
@@ -307,7 +309,7 @@
             document.getElementById('player-wait').classList.remove('hidden');
         }
 
-        // 6. UI Updates
+        // 6. UI Rendering
         function renderAdmin() {
             ['lobby', 'question', 'results', 'podium'].forEach(s => document.getElementById(`admin-${s}`).classList.add('hidden'));
             document.getElementById(`admin-${gameState.status}`).classList.remove('hidden');
@@ -315,7 +317,7 @@
             if (gameState.status === 'lobby') {
                 document.getElementById('player-count').innerText = players.length;
                 document.getElementById('player-list').innerHTML = players.map(p => 
-                    `<span class="bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold border border-slate-600">${p.name}</span>`
+                    `<span class="bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold border border-white/10 animate-pulse">${p.name}</span>`
                 ).join('');
                 document.getElementById('btn-admin-start').disabled = players.length === 0;
             }
@@ -335,7 +337,7 @@
             if (gameState.status === 'results') {
                 document.getElementById('leaderboard-list').innerHTML = players.slice(0, 5).map((p, i) => `
                     <div class="flex items-center justify-between bg-slate-700/50 p-6 rounded-3xl border-l-8 border-purple-500">
-                        <div class="flex items-center gap-6"><span class="text-xl font-black text-slate-400">#${i+1}</span><span class="text-3xl font-black uppercase">${p.name}</span></div>
+                        <div class="flex items-center gap-6"><span class="text-xl font-black text-slate-400">#${i+1}</span><span class="text-3xl font-black uppercase tracking-tight">${p.name}</span></div>
                         <span class="text-4xl font-black text-purple-400">${p.score} <span class="text-sm">PKT</span></span>
                     </div>
                 `).join('');
@@ -343,8 +345,8 @@
             if (gameState.status === 'podium') {
                 const top = players.slice(0, 3);
                 document.getElementById('podium-display').innerHTML = `
-                    <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[1]?.name || '-'}</span><div class="w-32 md:w-48 podium-2 rounded-t-[2.5rem] flex items-center justify-center text-6xl font-black">2</div></div>
-                    <div class="flex flex-col items-center"><i data-lucide="medal" class="text-yellow-400 mb-4 animate-bounce"></i><span class="text-4xl font-black mb-4 text-yellow-400">${top[0]?.name || '-'}</span><div class="w-48 md:w-64 podium-1 rounded-t-[2.5rem] flex items-center justify-center text-8xl font-black shadow-2xl">1</div></div>
+                    <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[1]?.name || '-'}</span><div class="w-32 md:w-48 podium-2 rounded-t-[2.5rem] flex items-center justify-center text-6xl font-black shadow-2xl">2</div></div>
+                    <div class="flex flex-col items-center"><i data-lucide="medal" class="text-yellow-400 mb-4 animate-bounce"></i><span class="text-4xl font-black mb-4 text-yellow-400 uppercase tracking-tighter italic">${top[0]?.name || '-'}</span><div class="w-48 md:w-64 podium-1 rounded-t-[2.5rem] flex items-center justify-center text-8xl font-black shadow-2xl">1</div></div>
                     <div class="flex flex-col items-center"><span class="font-bold mb-4 text-xl">${top[2]?.name || '-'}</span><div class="w-32 md:w-48 podium-3 rounded-t-[2.5rem] flex items-center justify-center text-4xl font-black shadow-2xl">3</div></div>
                 `;
                 lucide.createIcons();
@@ -357,21 +359,25 @@
             if (gameState.status === 'question') {
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('player-feedback').classList.add('hidden');
-                if (me.lastAnswerQ === gameState.qIndex) { document.getElementById('player-game').classList.add('hidden'); document.getElementById('player-wait').classList.remove('hidden'); }
-                else { document.getElementById('player-game').classList.remove('hidden'); }
+                if (me.lastAnswerQ === gameState.qIndex) { 
+                    document.getElementById('player-game').classList.add('hidden'); 
+                    document.getElementById('player-wait').classList.remove('hidden'); 
+                } else { 
+                    document.getElementById('player-game').classList.remove('hidden'); 
+                }
             }
             if (gameState.status === 'results') {
                 document.getElementById('player-game').classList.add('hidden');
                 document.getElementById('player-wait').classList.add('hidden');
                 const card = document.getElementById('feedback-card');
                 if (me.lastCorrect) {
-                    card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-green-600 border-b-8 border-green-800";
+                    card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-green-600 border-b-8 border-green-800 shadow-2xl";
                     document.getElementById('feedback-title').innerText = "RICHTIG!";
                     document.getElementById('feedback-points').innerText = `+${me.lastPoints} PKT`;
                 } else {
-                    card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-red-600 border-b-8 border-red-800";
+                    card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-red-600 border-b-8 border-red-800 shadow-2xl";
                     document.getElementById('feedback-title').innerText = "FALSCH";
-                    document.getElementById('feedback-points').innerText = "WEITER!";
+                    document.getElementById('feedback-points').innerText = "WEITER GEHT'S!";
                 }
                 document.getElementById('player-feedback').classList.remove('hidden');
             }
@@ -382,7 +388,7 @@
             }
         }
 
-        // 7. Event Listener
+        // 7. Event Handler
         document.getElementById('btn-choice-admin').onclick = () => window.setRole('admin');
         document.getElementById('btn-choice-player').onclick = () => window.setRole('player');
         document.getElementById('btn-admin-start').onclick = startGame;

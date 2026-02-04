@@ -36,9 +36,9 @@
     </script>
 
     <div id="app">
-        <!-- Status -->
-        <div id="conn-status" class="fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-red-500 border border-red-500/30">
-            Initialisierung...
+        <!-- Connection Status -->
+        <div id="conn-status" class="fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-yellow-500 border border-yellow-500/30">
+            Verbinde...
         </div>
 
         <!-- Role Selection -->
@@ -62,7 +62,7 @@
         <div id="screen-admin" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
             <header class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
-                    <div class="bg-purple-600 p-2 rounded-lg shadow-lg"><i data-lucide="trophy"></i></div>
+                    <div class="bg-purple-600 p-2 rounded-lg"><i data-lucide="trophy"></i></div>
                     <h2 class="text-2xl font-black uppercase italic tracking-tighter">Stallion Control</h2>
                 </div>
                 <div class="flex gap-4">
@@ -93,12 +93,12 @@
                     </div>
                 </div>
 
-                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8 animate-in fade-in duration-500">
+                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8">
                     <div class="bg-white text-slate-900 p-12 rounded-[2.5rem] shadow-2xl text-center relative border-b-8 border-slate-200">
                         <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-10 py-3 rounded-full font-black shadow-xl">
                             FRAGE <span id="q-number">1</span> / <span id="q-total">4</span>
                         </div>
-                        <h2 id="q-text" class="text-3xl md:text-5xl font-black pt-4 italic"></h2>
+                        <h2 id="q-text" class="text-2xl md:text-5xl font-black pt-4 italic"></h2>
                     </div>
                     <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-6 h-64"></div>
                     <div class="flex justify-center">
@@ -135,7 +135,7 @@
             <div id="player-wait" class="hidden text-center animate-in fade-in duration-300">
                 <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-24 h-24 text-white"></i></div>
                 <h2 class="text-4xl font-black uppercase italic">Du bist drin!</h2>
-                <p class="text-white/80 mt-2 font-medium">Blick zum Beamer...</p>
+                <p id="player-wait-msg" class="text-white/80 mt-2 font-medium">Blick zum Beamer...</p>
             </div>
 
             <div id="player-game" class="hidden w-full h-full flex flex-col gap-4 fixed inset-0 p-4 bg-slate-950 z-[100]">
@@ -157,17 +157,24 @@
         </div>
     </div>
 
+    <!-- Error Alert (Hidden) -->
+    <div id="error-alert" class="hidden fixed bottom-4 left-4 right-4 bg-red-600 text-white p-4 rounded-xl z-[200] flex justify-between items-center shadow-2xl">
+        <span id="error-msg"></span>
+        <button onclick="document.getElementById('error-alert').classList.add('hidden')" class="bg-white/20 p-1 rounded">Ok</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // Firebase Setup
         const app = initializeApp(myFirebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // KRITISCH: Pfad muss 6-teilig sein für Dokumente (Rule 1)
-        const appId = 'stallion-v6-stable'; 
+        // KRITISCH: AppId muss neu sein, um alte Konflikte zu vermeiden
+        const appId = 'stallion-v7-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -205,27 +212,35 @@
 
         lucide.createIcons();
 
+        function showError(msg) {
+            console.error(msg);
+            const alert = document.getElementById('error-alert');
+            const msgEl = document.getElementById('error-msg');
+            msgEl.innerText = msg;
+            alert.classList.remove('hidden');
+        }
+
         // 1. Authentifizierung abwarten (Rule 3)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 const statusEl = document.getElementById('conn-status');
-                statusEl.innerText = 'Verbunden';
+                statusEl.innerText = 'Online';
                 statusEl.className = 'fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-green-500 border border-green-500/30';
                 if (myRole) initSync();
             } else {
-                signInAnonymously(auth).catch(e => console.error("Firebase Login Fehler:", e));
+                signInAnonymously(auth).catch(e => showError("Firebase Login: " + e.message));
             }
         });
 
-        // 2. Rollen-Wahl (Startet Sync erst, wenn Rolle feststeht)
+        // 2. Rollen-Wahl
         window.setRole = async (role) => {
             myRole = role;
             document.getElementById('screen-role').classList.add('hidden');
             document.getElementById(`screen-${role}`).classList.remove('hidden');
 
             if (role === 'admin') {
-                const url = window.location.href.startsWith('file:') ? "HOSTEN!" : window.location.href;
+                const url = window.location.href.startsWith('file:') ? "ONLINE HOSTEN!" : window.location.href;
                 document.getElementById('display-url').innerText = url;
                 new QRCode(document.getElementById("qrcode-container"), {
                     text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L
@@ -235,28 +250,29 @@
             if (currentUser) initSync();
         };
 
-        // 3. Synchronisation (ERST NACH AUTH + ROLLENWAHL)
+        // 3. Synchronisation
         function initSync() {
             if (!currentUser) return;
 
-            // Globaler Game State (6 Segmente: artifacts/appId/public/data/gameSession/mainState)
+            // Global State
             onSnapshot(gameDocRef, (s) => {
                 if (s.exists()) {
                     gameState = s.data();
                     if (myRole === 'admin') renderAdmin();
                     else renderPlayer();
                 } else if (myRole === 'admin') {
-                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
+                    // Start State anlegen
+                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 }).catch(e => showError("Fehler beim Erstellen: " + e.message));
                 }
-            }, (e) => console.error("Game Sync Fehler:", e));
+            }, (e) => showError("Game Sync: " + e.message));
 
-            // Spieler Liste (5 Segmente: artifacts/appId/public/data/players)
+            // Players
             onSnapshot(playersColRef, (s) => {
                 players = s.docs.map(d => ({ id: d.id, ...d.data() }));
                 players.sort((a, b) => b.score - a.score);
                 if (myRole === 'admin') renderAdmin();
                 else renderPlayer();
-            }, (e) => console.error("Player Sync Fehler:", e));
+            }, (e) => showError("Player Sync: " + e.message));
         }
 
         // 4. Admin Logik
@@ -286,9 +302,8 @@
         async function joinGame() {
             const name = document.getElementById('player-name-input').value.trim();
             if (!name || !currentUser) return;
-            // Document reference for single player (6 segments)
             const pDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
-            await setDoc(pDocRef, { name, score: 0, lastAnswerQ: -1 });
+            await setDoc(pDocRef, { name, score: 0, lastAnswerQ: -1 }).catch(e => showError("Beitreten: " + e.message));
             document.getElementById('player-login').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
@@ -304,12 +319,12 @@
                 lastAnswerQ: gameState.qIndex, 
                 lastCorrect: correct, 
                 lastPoints: pts 
-            });
+            }).catch(e => showError("Antwort: " + e.message));
             document.getElementById('player-game').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
 
-        // 6. UI Rendering
+        // 6. Rendering
         function renderAdmin() {
             ['lobby', 'question', 'results', 'podium'].forEach(s => document.getElementById(`admin-${s}`).classList.add('hidden'));
             document.getElementById(`admin-${gameState.status}`).classList.remove('hidden');
@@ -362,6 +377,7 @@
                 if (me.lastAnswerQ === gameState.qIndex) { 
                     document.getElementById('player-game').classList.add('hidden'); 
                     document.getElementById('player-wait').classList.remove('hidden'); 
+                    document.getElementById('player-wait-msg').innerText = "Warten auf Auflösung...";
                 } else { 
                     document.getElementById('player-game').classList.remove('hidden'); 
                 }
@@ -377,18 +393,18 @@
                 } else {
                     card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-red-600 border-b-8 border-red-800 shadow-2xl";
                     document.getElementById('feedback-title').innerText = "FALSCH";
-                    document.getElementById('feedback-points').innerText = "WEITER GEHT'S!";
+                    document.getElementById('feedback-points').innerText = "WEITER!";
                 }
                 document.getElementById('player-feedback').classList.remove('hidden');
             }
             if (gameState.status === 'podium') {
                 document.getElementById('player-feedback').classList.add('hidden');
                 document.getElementById('player-wait').classList.remove('hidden');
-                document.getElementById('player-wait').innerHTML = `<h2 class="text-5xl font-black uppercase italic italic">FINALE!</h2><p class="text-3xl mt-2 font-bold">${me.score} PKT</p>`;
+                document.getElementById('player-wait-msg').innerHTML = `<h2 class="text-5xl font-black uppercase italic italic">FINALE!</h2><p class="text-3xl mt-2 font-bold">${me.score} PKT</p>`;
             }
         }
 
-        // 7. Event Handler
+        // 7. Click Handler
         document.getElementById('btn-choice-admin').onclick = () => window.setRole('admin');
         document.getElementById('btn-choice-player').onclick = () => window.setRole('player');
         document.getElementById('btn-admin-start').onclick = startGame;

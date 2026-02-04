@@ -71,7 +71,6 @@
             100% { transform: scale(1) translateX(-50%); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
         }
         .timer-active {
-            /* Wichtig: transform origin beachten wegen centering */
             animation: pulse-ring 1s infinite;
             transform-origin: center;
         }
@@ -150,16 +149,16 @@
         <!-- Role Selection -->
         <div id="screen-role" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
             <h1 class="text-5xl md:text-7xl font-black mb-12 text-white drop-shadow-lg italic uppercase tracking-tighter">Quiz Pixel 10a</h1>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl border-2 border-white/40 hover:bg-white/30 hover:border-white transition-all group shadow-xl">
+            
+            <div class="flex justify-center w-full">
+                <!-- Admin Button -->
+                <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl border-2 border-white/40 hover:bg-white/30 hover:border-white transition-all group shadow-xl w-full max-w-sm">
                     <i data-lucide="monitor" class="w-12 h-12 text-white mb-4 group-hover:scale-110 transition-transform"></i>
                     <span class="text-2xl font-bold uppercase tracking-tight">Admin</span>
-                    <p class="text-white/80 mt-2 text-sm italic">Video & Beamer-Steuerung</p>
                 </button>
-                <button id="btn-choice-player" class="flex flex-col items-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl border-2 border-white/40 hover:bg-white/30 hover:border-white transition-all group shadow-xl">
-                    <i data-lucide="smartphone" class="w-12 h-12 text-white mb-4 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-2xl font-bold uppercase tracking-tight">Mitspielen</span>
-                    <p class="text-white/80 mt-2 text-sm italic">Teilnahme am Handy</p>
+                
+                <!-- Player Button (Hidden) -->
+                <button id="btn-choice-player" class="hidden">
                 </button>
             </div>
         </div>

@@ -14,6 +14,8 @@
         .bg-kahoot-blue { background-color: #1368ce; }
         .bg-kahoot-yellow { background-color: #d89e00; }
         .bg-kahoot-green { background-color: #26890c; }
+        /* Teilnehmer Hintergrundfarbe */
+        .bg-stallion-player { background-color: #ff5661; }
         .podium-1 { height: 220px; background: linear-gradient(to bottom, #ffd700, #b8860b); border-top: 4px solid #fef08a; }
         .podium-2 { height: 160px; background: linear-gradient(to bottom, #c0c0c0, #808080); border-top: 4px solid #e2e8f0; }
         .podium-3 { height: 110px; background: linear-gradient(to bottom, #cd7f32, #8b4513); border-top: 4px solid #fbbf24; }
@@ -67,7 +69,7 @@
                 </div>
                 <div class="flex gap-4">
                     <button id="btn-admin-reset" class="px-4 py-2 bg-slate-800 rounded-lg text-xs font-bold uppercase border border-slate-700 hover:bg-slate-700">Quiz Reset</button>
-                    <button onclick="location.reload()" class="px-4 py-2 bg-red-900/20 text-red-400 rounded-lg text-xs font-bold uppercase border border-red-900/30">Stop</button>
+                    <button id="btn-admin-stop" class="px-4 py-2 bg-red-900/20 text-red-400 rounded-lg text-xs font-bold uppercase border border-red-900/30 hover:bg-red-900/40 transition-all">Stop & Clear</button>
                 </div>
             </header>
 
@@ -123,11 +125,11 @@
         </div>
 
         <!-- Player View -->
-        <div id="screen-player" class="hidden min-h-screen bg-pink-600 flex flex-col items-center justify-center p-6">
+        <div id="screen-player" class="hidden min-h-screen bg-stallion-player flex flex-col items-center justify-center p-6 transition-colors duration-500">
             <div id="player-login" class="w-full max-w-sm text-center">
                 <h1 class="text-4xl font-black mb-8 italic uppercase text-white tracking-tighter">Stallion Player</h1>
                 <div class="bg-white/10 p-8 rounded-[2.5rem] backdrop-blur-md border-2 border-white/20 shadow-2xl">
-                    <input id="player-name-input" type="text" placeholder="Dein Name" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-pink-300 focus:ring-4 transition-all" maxLength="12">
+                    <input id="player-name-input" type="text" placeholder="Dein Name" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-slate-400 focus:ring-4 transition-all" maxLength="12">
                     <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Spiel beitreten</button>
                 </div>
             </div>
@@ -157,23 +159,22 @@
         </div>
     </div>
 
-    <!-- Error Alert (Hidden) -->
+    <!-- Error Alert -->
     <div id="error-alert" class="hidden fixed bottom-4 left-4 right-4 bg-red-600 text-white p-4 rounded-xl z-[200] flex justify-between items-center shadow-2xl">
         <span id="error-msg"></span>
-        <button onclick="document.getElementById('error-alert').classList.add('hidden')" class="bg-white/20 p-1 rounded">Ok</button>
+        <button onclick="document.getElementById('error-alert').classList.add('hidden')" class="bg-white/20 p-1 rounded px-3">Ok</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Firebase Setup
         const app = initializeApp(myFirebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // KRITISCH: AppId muss neu sein, um alte Konflikte zu vermeiden
+        // Konstante ID
         const appId = 'stallion-v7-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
@@ -220,7 +221,7 @@
             alert.classList.remove('hidden');
         }
 
-        // 1. Authentifizierung abwarten (Rule 3)
+        // Auth
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -233,14 +234,14 @@
             }
         });
 
-        // 2. Rollen-Wahl
+        // Rollen-Wahl
         window.setRole = async (role) => {
             myRole = role;
             document.getElementById('screen-role').classList.add('hidden');
             document.getElementById(`screen-${role}`).classList.remove('hidden');
 
             if (role === 'admin') {
-                const url = window.location.href.startsWith('file:') ? "ONLINE HOSTEN!" : window.location.href;
+                const url = window.location.href.startsWith('file:') ? "BITTE ONLINE HOSTEN!" : window.location.href;
                 document.getElementById('display-url').innerText = url;
                 new QRCode(document.getElementById("qrcode-container"), {
                     text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L
@@ -250,23 +251,20 @@
             if (currentUser) initSync();
         };
 
-        // 3. Synchronisation
+        // Sync
         function initSync() {
             if (!currentUser) return;
 
-            // Global State
             onSnapshot(gameDocRef, (s) => {
                 if (s.exists()) {
                     gameState = s.data();
                     if (myRole === 'admin') renderAdmin();
                     else renderPlayer();
                 } else if (myRole === 'admin') {
-                    // Start State anlegen
-                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 }).catch(e => showError("Fehler beim Erstellen: " + e.message));
+                    setDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
                 }
             }, (e) => showError("Game Sync: " + e.message));
 
-            // Players
             onSnapshot(playersColRef, (s) => {
                 players = s.docs.map(d => ({ id: d.id, ...d.data() }));
                 players.sort((a, b) => b.score - a.score);
@@ -275,7 +273,7 @@
             }, (e) => showError("Player Sync: " + e.message));
         }
 
-        // 4. Admin Logik
+        // Admin Actions
         async function startGame() {
             if (!currentUser) return;
             await updateDoc(gameDocRef, { status: 'question', qIndex: 0, startTime: Date.now() });
@@ -298,7 +296,27 @@
             }
         }
 
-        // 5. Player Logik
+        // STOP & CLEAR Logic
+        async function stopQuiz() {
+            if (!confirm("Soll das Quiz wirklich beendet und ALLE Teilnehmer gelöscht werden?")) return;
+            
+            try {
+                // 1. Reset Game State
+                await updateDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
+                
+                // 2. Delete All Players
+                const pSnap = await getDocs(playersColRef);
+                const deletePromises = pSnap.docs.map(d => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', d.id)));
+                await Promise.all(deletePromises);
+                
+                // 3. Reload
+                location.reload();
+            } catch (e) {
+                showError("Fehler beim Beenden: " + e.message);
+            }
+        }
+
+        // Player Actions
         async function joinGame() {
             const name = document.getElementById('player-name-input').value.trim();
             if (!name || !currentUser) return;
@@ -322,9 +340,10 @@
             }).catch(e => showError("Antwort: " + e.message));
             document.getElementById('player-game').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
+            document.getElementById('player-wait-msg').innerText = "Warten auf Auflösung...";
         }
 
-        // 6. Rendering
+        // Rendering Admin
         function renderAdmin() {
             ['lobby', 'question', 'results', 'podium'].forEach(s => document.getElementById(`admin-${s}`).classList.add('hidden'));
             document.getElementById(`admin-${gameState.status}`).classList.remove('hidden');
@@ -368,9 +387,13 @@
             }
         }
 
+        // Rendering Player
         function renderPlayer() {
             const me = players.find(p => p.id === currentUser.uid);
             if (!me) return;
+            if (gameState.status === 'lobby') {
+                document.getElementById('player-wait-msg').innerText = "Blick zum Beamer...";
+            }
             if (gameState.status === 'question') {
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('player-feedback').classList.add('hidden');
@@ -400,17 +423,18 @@
             if (gameState.status === 'podium') {
                 document.getElementById('player-feedback').classList.add('hidden');
                 document.getElementById('player-wait').classList.remove('hidden');
-                document.getElementById('player-wait-msg').innerHTML = `<h2 class="text-5xl font-black uppercase italic italic">FINALE!</h2><p class="text-3xl mt-2 font-bold">${me.score} PKT</p>`;
+                document.getElementById('player-wait-msg').innerHTML = `<h2 class="text-5xl font-black uppercase italic italic text-white">FINALE!</h2><p class="text-3xl mt-2 font-bold text-white">${me.score} PKT</p>`;
             }
         }
 
-        // 7. Click Handler
+        // Click Handler
         document.getElementById('btn-choice-admin').onclick = () => window.setRole('admin');
         document.getElementById('btn-choice-player').onclick = () => window.setRole('player');
         document.getElementById('btn-admin-start').onclick = startGame;
         document.getElementById('btn-admin-results').onclick = showResults;
         document.getElementById('btn-admin-next').onclick = nextQuestion;
         document.getElementById('btn-admin-reset').onclick = resetGame;
+        document.getElementById('btn-admin-stop').onclick = stopQuiz;
         document.getElementById('btn-player-join').onclick = joinGame;
         for (let i = 0; i < 4; i++) {
             document.getElementById(`btn-ans-${i}`).onclick = () => submitAnswer(i);

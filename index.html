@@ -15,10 +15,10 @@
         .bg-kahoot-yellow { background-color: #d89e00; }
         .bg-kahoot-green { background-color: #26890c; }
         
-        /* Neuer Hintergrund für Main & Admin */
+        /* Hintergrund für Main & Admin */
         .bg-stallion-main { background-color: #81a0f4; }
         
-        /* Teilnehmer Hintergrundfarbe */
+        /* Hintergrund für Teilnehmer */
         .bg-stallion-player { background-color: #ff5661; }
         
         .podium-1 { height: 240px; background: linear-gradient(to bottom, #ffd700, #b8860b); border-top: 4px solid #fef08a; }
@@ -34,7 +34,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: black;
+            background: #81a0f4; 
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -62,25 +62,25 @@
     </script>
 
     <div id="app">
-        <!-- Intro Video Section (Wird nur via Admin-Button getriggert) -->
+        <!-- Intro Video Section (YouTube Embed) -->
         <div id="screen-intro" class="video-overlay hidden">
-            <div class="relative w-full h-full max-w-6xl max-h-[80vh] bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <div class="relative w-full h-full max-w-sm md:max-w-6xl max-h-[85vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col items-center justify-center">
                 <iframe 
                     id="intro-video-iframe"
                     class="w-full h-full"
                     src="" 
-                    allow="autoplay"
-                    frameborder="0">
+                    title="Intro Video"
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen>
                 </iframe>
-                <div class="absolute inset-0 bg-transparent pointer-events-none flex items-center justify-center text-white/10 text-xl font-bold uppercase tracking-widest">
-                    Stallion Experience
-                </div>
             </div>
-            <div class="mt-8 flex flex-col items-center gap-2">
-                <button id="btn-skip-intro" class="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-full backdrop-blur-md font-black uppercase tracking-widest text-sm border border-white/20 transition-all">
+            
+            <div class="mt-6 flex flex-col items-center gap-2">
+                <button id="btn-skip-intro" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-full backdrop-blur-md font-black uppercase tracking-widest text-sm border border-white/20 transition-all shadow-lg hover:scale-105 active:scale-95">
                     Intro überspringen / Start
                 </button>
-                <p class="text-xs text-slate-500">Klicke hier, falls das Video nicht lädt.</p>
             </div>
         </div>
 
@@ -225,8 +225,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // Verwende eine neue Version der App-ID für einen sauberen Start
-        const appId = 'stallion-v11-final'; 
+        const appId = 'stallion-v13-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -296,7 +295,7 @@
         // Skip Intro Button
         document.getElementById('btn-skip-intro').onclick = () => {
             document.getElementById('screen-intro').classList.add('hidden');
-            // Stoppe das Video, indem src geleert wird
+            // Iframe src leeren zum Stoppen
             const iframe = document.getElementById('intro-video-iframe');
             if (iframe) iframe.src = ""; 
             
@@ -310,12 +309,15 @@
             document.getElementById('screen-role').classList.add('hidden');
 
             if (role === 'admin') {
-                // Intro Video jetzt erst starten (verhindert Autoplay-Blockaden und spart Daten)
+                // YouTube Embed erst jetzt setzen
                 const iframe = document.getElementById('intro-video-iframe');
-                iframe.src = "https://drive.google.com/file/d/1bRPmdC9SBnQ2q8lRn_Zop2yQ68NUTNGG/preview?autoplay=1";
+                // youtube/shorts link zu embed link konvertieren:
+                // Original: https://youtube.com/shorts/5PKjU_HA-eg
+                // Embed: https://www.youtube.com/embed/5PKjU_HA-eg
+                iframe.src = "https://www.youtube.com/embed/5PKjU_HA-eg?autoplay=1&rel=0&controls=0&loop=1&playlist=5PKjU_HA-eg";
                 document.getElementById('screen-intro').classList.remove('hidden');
                 
-                // QR Code mit role=player Parameter generieren
+                // QR Code
                 const baseStr = window.location.href.split('?')[0];
                 const playerUrl = baseStr + "?role=player";
                 document.getElementById('display-url').innerText = playerUrl;

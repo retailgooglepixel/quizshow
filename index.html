@@ -95,7 +95,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
                 <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl border-2 border-white/40 hover:bg-white/30 hover:border-white transition-all group shadow-xl">
                     <i data-lucide="monitor" class="w-12 h-12 text-white mb-4 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-2xl font-bold uppercase tracking-tight">Admin-Zentrale</span>
+                    <span class="text-2xl font-bold uppercase tracking-tight">Admin</span>
                     <p class="text-white/80 mt-2 text-sm italic">Video & Beamer-Steuerung</p>
                 </button>
                 <button id="btn-choice-player" class="flex flex-col items-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl border-2 border-white/40 hover:bg-white/30 hover:border-white transition-all group shadow-xl">
@@ -187,15 +187,27 @@
             <div id="player-wait" class="hidden text-center animate-in fade-in duration-300">
                 <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-24 h-24 text-white"></i></div>
                 <h2 class="text-4xl font-black uppercase italic">Du bist dabei!</h2>
-                <p id="player-wait-msg" class="text-white/80 mt-2 font-medium italic">Schau zum Beamer!</p>
+                <p id="player-wait-msg" class="text-white/80 mt-2 font-medium italic">Schau rüber zum Bildschirm!</p>
             </div>
 
             <div id="player-game" class="hidden w-full h-full flex flex-col gap-4 fixed inset-0 p-4 bg-slate-950 z-[100]">
                 <div class="grid grid-cols-1 grid-rows-4 gap-4 flex-1">
-                    <button id="btn-ans-0" class="bg-kahoot-red rounded-3xl shadow-xl flex items-center justify-center text-8xl active:scale-90 transition-all border-b-8 border-black/40">▲</button>
-                    <button id="btn-ans-1" class="bg-kahoot-blue rounded-3xl shadow-xl flex items-center justify-center text-8xl active:scale-90 transition-all border-b-8 border-black/40">◆</button>
-                    <button id="btn-ans-2" class="bg-kahoot-yellow rounded-3xl shadow-xl flex items-center justify-center text-8xl active:scale-90 transition-all border-b-8 border-black/40">●</button>
-                    <button id="btn-ans-3" class="bg-kahoot-green rounded-3xl shadow-xl flex items-center justify-center text-8xl active:scale-90 transition-all border-b-8 border-black/40">■</button>
+                    <button id="btn-ans-0" class="bg-kahoot-red p-4 rounded-3xl shadow-xl flex items-center justify-between text-white active:scale-95 transition-all border-b-8 border-black/20 group">
+                        <span class="text-4xl group-hover:scale-110 transition-transform">▲</span>
+                        <span id="player-opt-0" class="text-lg md:text-2xl font-bold text-right leading-tight">Option 1</span>
+                    </button>
+                    <button id="btn-ans-1" class="bg-kahoot-blue p-4 rounded-3xl shadow-xl flex items-center justify-between text-white active:scale-95 transition-all border-b-8 border-black/20 group">
+                        <span class="text-4xl group-hover:scale-110 transition-transform">◆</span>
+                        <span id="player-opt-1" class="text-lg md:text-2xl font-bold text-right leading-tight">Option 2</span>
+                    </button>
+                    <button id="btn-ans-2" class="bg-kahoot-yellow p-4 rounded-3xl shadow-xl flex items-center justify-between text-white active:scale-95 transition-all border-b-8 border-black/20 group">
+                        <span class="text-4xl group-hover:scale-110 transition-transform">●</span>
+                        <span id="player-opt-2" class="text-lg md:text-2xl font-bold text-right leading-tight">Option 3</span>
+                    </button>
+                    <button id="btn-ans-3" class="bg-kahoot-green p-4 rounded-3xl shadow-xl flex items-center justify-between text-white active:scale-95 transition-all border-b-8 border-black/20 group">
+                        <span class="text-4xl group-hover:scale-110 transition-transform">■</span>
+                        <span id="player-opt-3" class="text-lg md:text-2xl font-bold text-right leading-tight">Option 4</span>
+                    </button>
                 </div>
             </div>
 
@@ -479,12 +491,19 @@
             const me = players.find(p => p.id === currentUser.uid);
             if (!me) return;
             if (gameState.status === 'question') {
+                // Update button text for current question
+                const currentQ = QUIZ_DATA[gameState.qIndex];
+                document.getElementById('player-opt-0').innerText = currentQ.options[0];
+                document.getElementById('player-opt-1').innerText = currentQ.options[1];
+                document.getElementById('player-opt-2').innerText = currentQ.options[2];
+                document.getElementById('player-opt-3').innerText = currentQ.options[3];
+
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('player-feedback').classList.add('hidden');
                 if (me.lastAnswerQ === gameState.qIndex) { 
                     document.getElementById('player-game').classList.add('hidden'); 
                     document.getElementById('player-wait').classList.remove('hidden'); 
-                    document.getElementById('player-wait-msg').innerText = "Schau zum Beamer für die Auflösung...";
+                    document.getElementById('player-wait-msg').innerText = "Schau rüber zum Bildschirm!";
                 } else { 
                     document.getElementById('player-game').classList.remove('hidden'); 
                 }

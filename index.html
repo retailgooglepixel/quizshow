@@ -14,12 +14,28 @@
         .bg-kahoot-blue { background-color: #1368ce; }
         .bg-kahoot-yellow { background-color: #d89e00; }
         .bg-kahoot-green { background-color: #26890c; }
+        
         /* Teilnehmer Hintergrundfarbe */
         .bg-stallion-player { background-color: #ff5661; }
+        
         .podium-1 { height: 220px; background: linear-gradient(to bottom, #ffd700, #b8860b); border-top: 4px solid #fef08a; }
         .podium-2 { height: 160px; background: linear-gradient(to bottom, #c0c0c0, #808080); border-top: 4px solid #e2e8f0; }
         .podium-3 { height: 110px; background: linear-gradient(to bottom, #cd7f32, #8b4513); border-top: 4px solid #fbbf24; }
         #qrcode-container { padding: 10px; background: white; border-radius: 1rem; display: inline-block; }
+        
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen">
@@ -38,13 +54,28 @@
     </script>
 
     <div id="app">
+        <!-- Intro Video Screen -->
+        <div id="screen-intro" class="video-container">
+            <iframe 
+                id="intro-video"
+                width="100%" 
+                height="100%" 
+                src="https://drive.google.com/file/d/1bRPmdC9SBnQ2q8lRn_Zop2yQ68NUTNGG/preview?autoplay=1" 
+                allow="autoplay"
+                frameborder="0">
+            </iframe>
+            <button id="btn-skip-intro" class="absolute bottom-10 right-10 bg-white/20 hover:bg-white/40 px-6 py-3 rounded-full backdrop-blur-md font-bold uppercase tracking-widest text-sm border border-white/30 transition-all">
+                Intro überspringen
+            </button>
+        </div>
+
         <!-- Connection Status -->
         <div id="conn-status" class="fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-yellow-500 border border-yellow-500/30">
             Verbinde...
         </div>
 
-        <!-- Role Selection -->
-        <div id="screen-role" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <!-- Role Selection (Hidden initially) -->
+        <div id="screen-role" class="hidden flex flex-col items-center justify-center min-h-screen p-6 text-center">
             <h1 class="text-5xl md:text-7xl font-black mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 italic uppercase tracking-tighter">Quiz Stallion</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
                 <button id="btn-choice-admin" class="flex flex-col items-center p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-purple-500 transition-all group">
@@ -64,7 +95,7 @@
         <div id="screen-admin" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
             <header class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
-                    <div class="bg-purple-600 p-2 rounded-lg"><i data-lucide="trophy"></i></div>
+                    <div class="bg-purple-600 p-2 rounded-lg shadow-lg"><i data-lucide="trophy"></i></div>
                     <h2 class="text-2xl font-black uppercase italic tracking-tighter">Stallion Control</h2>
                 </div>
                 <div class="flex gap-4">
@@ -95,7 +126,7 @@
                     </div>
                 </div>
 
-                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8">
+                <div id="admin-question" class="hidden w-full max-w-6xl space-y-8 animate-in fade-in">
                     <div class="bg-white text-slate-900 p-12 rounded-[2.5rem] shadow-2xl text-center relative border-b-8 border-slate-200">
                         <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-10 py-3 rounded-full font-black shadow-xl">
                             FRAGE <span id="q-number">1</span> / <span id="q-total">4</span>
@@ -108,8 +139,8 @@
                     </div>
                 </div>
 
-                <div id="admin-results" class="hidden w-full max-w-3xl bg-slate-800/50 p-10 rounded-[3rem] border border-slate-700">
-                    <h2 class="text-4xl font-black mb-10 text-center italic uppercase">Zwischenstand</h2>
+                <div id="admin-results" class="hidden w-full max-w-3xl bg-slate-800/50 p-10 rounded-[3rem] border border-slate-700 animate-in zoom-in">
+                    <h2 class="text-4xl font-black mb-10 text-center italic uppercase">Top 5 Leaderboard</h2>
                     <div id="leaderboard-list" class="space-y-4"></div>
                     <div class="flex justify-center mt-12">
                         <button id="btn-admin-next" class="bg-gradient-to-r from-purple-600 to-pink-600 px-12 py-5 rounded-2xl font-black text-2xl hover:scale-105 transition-all shadow-xl uppercase">Nächste Frage</button>
@@ -117,7 +148,7 @@
                 </div>
 
                 <div id="admin-podium" class="hidden w-full max-w-5xl text-center">
-                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Das Podium</h1>
+                    <h1 class="text-6xl font-black mb-20 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-white to-yellow-600 uppercase italic">Das Finale</h1>
                     <div class="flex items-end justify-center gap-4 md:gap-12 h-96" id="podium-display"></div>
                     <button onclick="location.reload()" class="mt-20 px-10 py-4 bg-slate-800 border border-slate-700 rounded-2xl hover:bg-slate-700 transition-all font-bold uppercase text-xs">Beenden</button>
                 </div>
@@ -130,13 +161,13 @@
                 <h1 class="text-4xl font-black mb-8 italic uppercase text-white tracking-tighter">Stallion Player</h1>
                 <div class="bg-white/10 p-8 rounded-[2.5rem] backdrop-blur-md border-2 border-white/20 shadow-2xl">
                     <input id="player-name-input" type="text" placeholder="Dein Name" class="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-bold text-lg mb-6 focus:outline-none ring-slate-400 focus:ring-4 transition-all" maxLength="12">
-                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Spiel beitreten</button>
+                    <button id="btn-player-join" class="w-full bg-slate-900 text-white py-6 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all uppercase">Quiz beitreten</button>
                 </div>
             </div>
 
             <div id="player-wait" class="hidden text-center animate-in fade-in duration-300">
                 <div class="animate-bounce mb-8 inline-block"><i data-lucide="users" class="w-24 h-24 text-white"></i></div>
-                <h2 class="text-4xl font-black uppercase italic">Du bist drin!</h2>
+                <h2 class="text-4xl font-black uppercase italic">Du bist dabei!</h2>
                 <p id="player-wait-msg" class="text-white/80 mt-2 font-medium">Blick zum Beamer...</p>
             </div>
 
@@ -174,8 +205,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // Konstante ID
-        const appId = 'stallion-v7-final'; 
+        const appId = 'stallion-v8-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -221,30 +251,48 @@
             alert.classList.remove('hidden');
         }
 
+        // Check for role param immediately
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoRole = urlParams.get('role');
+
         // Auth
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 const statusEl = document.getElementById('conn-status');
-                statusEl.innerText = 'Online';
+                statusEl.innerText = 'Verbunden';
                 statusEl.className = 'fixed top-4 right-4 z-50 px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-green-500 border border-green-500/30';
-                if (myRole) initSync();
+                
+                // If the user scanned a QR code or used a link with ?role=player
+                if (autoRole === 'player' && !myRole) {
+                    document.getElementById('screen-intro').classList.add('hidden');
+                    window.setRole('player');
+                }
             } else {
                 signInAnonymously(auth).catch(e => showError("Firebase Login: " + e.message));
             }
         });
 
-        // Rollen-Wahl
+        // Intro Logic
+        document.getElementById('btn-skip-intro').onclick = () => {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-role').classList.remove('hidden');
+        };
+
+        // Role Selection
         window.setRole = async (role) => {
             myRole = role;
             document.getElementById('screen-role').classList.add('hidden');
             document.getElementById(`screen-${role}`).classList.remove('hidden');
 
             if (role === 'admin') {
-                const url = window.location.href.startsWith('file:') ? "BITTE ONLINE HOSTEN!" : window.location.href;
-                document.getElementById('display-url').innerText = url;
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('role', 'player');
+                const playerUrl = currentUrl.toString();
+                
+                document.getElementById('display-url').innerText = playerUrl;
                 new QRCode(document.getElementById("qrcode-container"), {
-                    text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L
+                    text: playerUrl, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L
                 });
             }
             
@@ -275,7 +323,6 @@
 
         // Admin Actions
         async function startGame() {
-            if (!currentUser) return;
             await updateDoc(gameDocRef, { status: 'question', qIndex: 0, startTime: Date.now() });
         }
         async function showResults() {
@@ -296,24 +343,15 @@
             }
         }
 
-        // STOP & CLEAR Logic
         async function stopQuiz() {
             if (!confirm("Soll das Quiz wirklich beendet und ALLE Teilnehmer gelöscht werden?")) return;
-            
             try {
-                // 1. Reset Game State
                 await updateDoc(gameDocRef, { status: 'lobby', qIndex: -1 });
-                
-                // 2. Delete All Players
                 const pSnap = await getDocs(playersColRef);
                 const deletePromises = pSnap.docs.map(d => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', d.id)));
                 await Promise.all(deletePromises);
-                
-                // 3. Reload
                 location.reload();
-            } catch (e) {
-                showError("Fehler beim Beenden: " + e.message);
-            }
+            } catch (e) { showError("Fehler beim Beenden: " + e.message); }
         }
 
         // Player Actions
@@ -321,7 +359,7 @@
             const name = document.getElementById('player-name-input').value.trim();
             if (!name || !currentUser) return;
             const pDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
-            await setDoc(pDocRef, { name, score: 0, lastAnswerQ: -1 }).catch(e => showError("Beitreten: " + e.message));
+            await setDoc(pDocRef, { name, score: 0, lastAnswerQ: -1 });
             document.getElementById('player-login').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
         }
@@ -337,10 +375,9 @@
                 lastAnswerQ: gameState.qIndex, 
                 lastCorrect: correct, 
                 lastPoints: pts 
-            }).catch(e => showError("Antwort: " + e.message));
+            });
             document.getElementById('player-game').classList.add('hidden');
             document.getElementById('player-wait').classList.remove('hidden');
-            document.getElementById('player-wait-msg').innerText = "Warten auf Auflösung...";
         }
 
         // Rendering Admin
@@ -358,6 +395,7 @@
             if (gameState.status === 'question') {
                 const q = QUIZ_DATA[gameState.qIndex];
                 document.getElementById('q-number').innerText = gameState.qIndex + 1;
+                document.getElementById('q-total').innerText = QUIZ_DATA.length;
                 document.getElementById('q-text').innerText = q.q;
                 const colors = ['bg-kahoot-red', 'bg-kahoot-blue', 'bg-kahoot-yellow', 'bg-kahoot-green'];
                 const shapes = ['▲', '◆', '●', '■'];
@@ -370,8 +408,11 @@
             }
             if (gameState.status === 'results') {
                 document.getElementById('leaderboard-list').innerHTML = players.slice(0, 5).map((p, i) => `
-                    <div class="flex items-center justify-between bg-slate-700/50 p-6 rounded-3xl border-l-8 border-purple-500">
-                        <div class="flex items-center gap-6"><span class="text-xl font-black text-slate-400">#${i+1}</span><span class="text-3xl font-black uppercase tracking-tight">${p.name}</span></div>
+                    <div class="flex items-center justify-between bg-slate-700/50 p-6 rounded-3xl border-l-8 border-purple-500 animate-in slide-in-from-left">
+                        <div class="flex items-center gap-6">
+                            <span class="text-2xl font-black text-slate-400 w-10">#${i+1}</span>
+                            <span class="text-3xl font-black uppercase tracking-tight">${p.name}</span>
+                        </div>
                         <span class="text-4xl font-black text-purple-400">${p.score} <span class="text-sm">PKT</span></span>
                     </div>
                 `).join('');
@@ -391,16 +432,13 @@
         function renderPlayer() {
             const me = players.find(p => p.id === currentUser.uid);
             if (!me) return;
-            if (gameState.status === 'lobby') {
-                document.getElementById('player-wait-msg').innerText = "Blick zum Beamer...";
-            }
             if (gameState.status === 'question') {
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('player-feedback').classList.add('hidden');
                 if (me.lastAnswerQ === gameState.qIndex) { 
                     document.getElementById('player-game').classList.add('hidden'); 
                     document.getElementById('player-wait').classList.remove('hidden'); 
-                    document.getElementById('player-wait-msg').innerText = "Warten auf Auflösung...";
+                    document.getElementById('player-wait-msg').innerText = "Schau zum Beamer für die Auflösung...";
                 } else { 
                     document.getElementById('player-game').classList.remove('hidden'); 
                 }
@@ -416,7 +454,7 @@
                 } else {
                     card.className = "w-full max-w-sm p-12 rounded-[3.5rem] text-center bg-red-600 border-b-8 border-red-800 shadow-2xl";
                     document.getElementById('feedback-title').innerText = "FALSCH";
-                    document.getElementById('feedback-points').innerText = "WEITER!";
+                    document.getElementById('feedback-points').innerText = "NÄCHSTE RUNDE!";
                 }
                 document.getElementById('player-feedback').classList.remove('hidden');
             }

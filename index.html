@@ -114,6 +114,7 @@
 <body class="text-white min-h-screen">
 
     <script>
+        // Deine neue, eingeschränkte Firebase Konfiguration
         const myFirebaseConfig = {
             apiKey: "AIzaSyCBzaBtdqFNjDJv83bRWQVPaYxBjk4BIQ8",
             authDomain: "quiz-stallion.firebaseapp.com",
@@ -159,7 +160,7 @@
                 <h1 class="text-5xl md:text-8xl font-black mb-16 text-white drop-shadow-2xl italic uppercase tracking-tighter">Quiz Pixel 10a</h1>
                 
                 <div class="flex justify-center w-full">
-                    <!-- Admin Button - Glassmorphism -->
+                    <!-- Admin Button - Glassmorphism (Centered) -->
                     <button id="btn-choice-admin" class="flex flex-col items-center p-12 bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/30 hover:bg-white/20 hover:border-white hover:scale-105 transition-all group shadow-2xl w-full max-w-md">
                         <div class="bg-white/20 p-6 rounded-full mb-6 group-hover:bg-white/30 transition-colors">
                             <i data-lucide="monitor" class="w-16 h-16 text-white group-hover:scale-110 transition-transform"></i>
@@ -167,6 +168,7 @@
                         <span class="text-3xl font-black uppercase tracking-tight text-white drop-shadow-md">Admin</span>
                     </button>
                     
+                    <!-- Player Button Hidden (Still technically there for QR link) -->
                     <button id="btn-choice-player" class="hidden"></button>
                 </div>
             </div>
@@ -329,7 +331,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        const appId = 'pixel10a-v22-final'; 
+        const appId = 'pixel10a-v25-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -370,11 +372,25 @@
 
         lucide.createIcons();
 
+        // Intelligente Fehleranzeige mit Link-Generator
         function showError(msg) {
             console.error(msg);
             const alert = document.getElementById('error-alert');
             const msgEl = document.getElementById('error-msg');
-            msgEl.innerText = msg;
+            
+            // Check for identity toolkit error
+            if (msg.includes("identity-toolkit-api")) {
+                msgEl.innerHTML = `
+                    <b>WICHTIG: API nicht aktiviert!</b><br>
+                    Damit das Quiz funktioniert, musst du diese Einstellung einschalten:<br>
+                    <a href="https://console.cloud.google.com/apis/library/identitytoolkit.googleapis.com" target="_blank" style="text-decoration: underline; font-weight: bold;">
+                        HIER KLICKEN und auf "AKTIVIEREN" drücken
+                    </a>
+                `;
+            } else {
+                msgEl.innerText = msg;
+            }
+            
             alert.classList.remove('hidden');
         }
 
@@ -392,7 +408,7 @@
                     window.setRole('player');
                 }
             } else {
-                signInAnonymously(auth).catch(e => showError("Firebase Login: " + e.message));
+                signInAnonymously(auth).catch(e => showError("Firebase Login Fehler: " + e.message));
             }
         });
 

@@ -18,7 +18,7 @@
         
         /* Hintergrundbild Setup */
         .bg-pixel-image {
-            background-image: url('https://i.postimg.cc/ZY7QWdfc/image-de-DE-P10a-2026Q1-TEASE-3840x2160.jpg');
+            background-image: url('https://i.postimg.cc/hjXwS49w/Screenshot-04-02-2026-um-17-28-35-PM.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -27,7 +27,9 @@
         
         /* Dunkles Overlay für Lesbarkeit */
         .bg-overlay {
-            background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+            min-height: 100vh;
+            width: 100%;
         }
 
         .bg-pixel-player { background-color: #ff5661; }
@@ -113,7 +115,7 @@
 
     <script>
         const myFirebaseConfig = {
-            apiKey: "AIzaSyD7fZDUszAY0kmwmV6QbhqCCmQVBbF7hqw",
+            apiKey: "AIzaSyCBzaBtdqFNjDJv83bRWQVPaYxBjk4BIQ8",
             authDomain: "quiz-stallion.firebaseapp.com",
             projectId: "quiz-stallion",
             storageBucket: "quiz-stallion.firebasestorage.app",
@@ -124,7 +126,7 @@
     </script>
 
     <div id="app" class="min-h-screen bg-pixel-image">
-        <div class="min-h-screen w-full bg-overlay"> <!-- Overlay Wrapper -->
+        <div class="bg-overlay"> <!-- Overlay Wrapper -->
 
             <!-- Intro Video Section -->
             <div id="screen-intro" class="video-overlay hidden">
@@ -327,7 +329,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        const appId = 'pixel10a-v20-final'; 
+        const appId = 'pixel10a-v22-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 

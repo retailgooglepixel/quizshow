@@ -116,7 +116,7 @@
     <script>
         // Deine neue, eingeschränkte Firebase Konfiguration
         const myFirebaseConfig = {
-            apiKey: "AIzaSyBQ0Iv6MUX1gdmOW2pZtLc6CK7w7smC72A",
+            apiKey: "AIzaSyA6fF5qnutWU8H4CE6WcFqVoyCe6as5iiA", // NEUER KEY AKTIV
             authDomain: "quiz-stallion.firebaseapp.com",
             projectId: "quiz-stallion",
             storageBucket: "quiz-stallion.firebasestorage.app",
@@ -331,7 +331,8 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        const appId = 'pixel10a-v26-final'; 
+        // Bump version to ensure fresh state
+        const appId = 'pixel10a-v27-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -387,6 +388,8 @@
                         HIER KLICKEN und auf "AKTIVIEREN" drücken
                     </a>
                 `;
+            } else if (msg.includes("auth/api-key-expired")) {
+                msgEl.innerText = "API-Key abgelaufen. Bitte neuen Schlüssel erstellen.";
             } else {
                 msgEl.innerText = msg;
             }

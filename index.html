@@ -152,7 +152,7 @@
 
             <!-- Connection Status -->
             <div id="conn-status" class="fixed top-4 right-4 z-[100] px-3 py-1 bg-black/50 rounded-full text-[10px] uppercase font-bold text-yellow-500 border border-yellow-500/30">
-                Initialisierung...
+                Verbinde...
             </div>
 
             <!-- Role Selection -->
@@ -332,7 +332,7 @@
         const auth = getAuth(app);
         
         // Bump version to ensure fresh state
-        const appId = 'pixel10a-v31-final'; 
+        const appId = 'pixel10a-v35-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -379,16 +379,14 @@
             const alert = document.getElementById('error-alert');
             const msgEl = document.getElementById('error-msg');
             
-            // Check for configuration not found error
-            if (msg.includes("auth/configuration-not-found")) {
+            // Check for identity toolkit error
+            if (msg.includes("identity-toolkit-api")) {
                 msgEl.innerHTML = `
-                    <b>WICHTIG: Authentication fehlt!</b><br>
-                    Du hast einen neuen Schlüssel, aber Firebase Auth noch nicht aktiviert.<br>
-                    <a href="https://console.firebase.google.com/project/quiz-stallion/authentication/providers" target="_blank" style="text-decoration: underline; font-weight: bold;">
-                        1. Hier klicken (Firebase Console)
-                    </a><br>
-                    2. Auf "Get started" klicken<br>
-                    3. "Anonymous" aktivieren & speichern.
+                    <b>WICHTIG: API nicht aktiviert!</b><br>
+                    Damit das Quiz funktioniert, musst du diese Einstellung einschalten:<br>
+                    <a href="https://console.cloud.google.com/apis/library/identitytoolkit.googleapis.com?project=quiz-stallion" target="_blank" style="text-decoration: underline; font-weight: bold;">
+                        HIER KLICKEN und auf "AKTIVIEREN" drücken
+                    </a>
                 `;
             } else if (msg.includes("auth/api-key-expired")) {
                 msgEl.innerHTML = `
@@ -414,7 +412,6 @@
         function bind(id, fn) {
             const el = document.getElementById(id);
             if (el) el.onclick = fn;
-            else console.warn("Element not found:", id);
         }
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -511,8 +508,14 @@
                 const elapsed = Date.now() - startTime;
                 const remaining = Math.max(0, Math.ceil((duration - elapsed) / 1000));
                 
-                if (myRole === 'admin') document.getElementById('admin-timer').innerText = remaining;
-                if (myRole === 'player') document.getElementById('player-timer').innerText = remaining;
+                if (myRole === 'admin') {
+                    const el = document.getElementById('admin-timer');
+                    if (el) el.innerText = remaining;
+                }
+                if (myRole === 'player') {
+                    const el = document.getElementById('player-timer');
+                    if (el) el.innerText = remaining;
+                }
 
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
@@ -535,7 +538,9 @@
             const totalPlayers = players.length;
             if (totalPlayers === 0) return;
             const answeredCount = players.filter(p => p.lastAnswerQ === gameState.qIndex).length;
-            document.getElementById('admin-answer-count').innerText = `${answeredCount} / ${totalPlayers}`;
+            
+            const el = document.getElementById('admin-answer-count');
+            if (el) el.innerText = `${answeredCount} / ${totalPlayers}`;
             
             if (answeredCount === totalPlayers) {
                 setTimeout(() => {
@@ -689,11 +694,17 @@
             if (currentEl) currentEl.classList.remove('hidden');
 
             if (gameState.status === 'lobby') {
-                document.getElementById('player-count').innerText = players.length;
-                document.getElementById('player-list').innerHTML = players.map(p => 
-                    `<span class="bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold border border-white/30 animate-pulse">${p.name}</span>`
-                ).join('');
-                document.getElementById('btn-admin-start').disabled = players.length === 0;
+                const countEl = document.getElementById('player-count');
+                const listEl = document.getElementById('player-list');
+                const startBtn = document.getElementById('btn-admin-start');
+                
+                if (countEl) countEl.innerText = players.length;
+                if (listEl) {
+                    listEl.innerHTML = players.map(p => 
+                        `<span class="bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold border border-white/30 animate-pulse">${p.name}</span>`
+                    ).join('');
+                }
+                if (startBtn) startBtn.disabled = players.length === 0;
             }
             if (gameState.status === 'question') {
                 const q = QUIZ_DATA[gameState.qIndex];
@@ -756,66 +767,6 @@
                 `;
                 lucide.createIcons();
                 if (top[0]) setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }), 2200);
-            }
-        }
-
-        function renderPlayer() {
-            const me = players.find(p => p.id === currentUser.uid);
-            if (!me) return;
-
-            if (showLocalFeedback) return;
-            document.getElementById('player-local-feedback').classList.add('hidden');
-
-            if (gameState.status === 'question') {
-                const currentQ = QUIZ_DATA[gameState.qIndex];
-                document.getElementById('player-opt-0').innerText = currentQ.options[0];
-                document.getElementById('player-opt-1').innerText = currentQ.options[1];
-                document.getElementById('player-opt-2').innerText = currentQ.options[2];
-                document.getElementById('player-opt-3').innerText = currentQ.options[3];
-
-                document.getElementById('player-wait').classList.add('hidden');
-                
-                if (me.lastAnswerQ === gameState.qIndex) { 
-                    document.getElementById('player-game').classList.add('hidden'); 
-                    document.getElementById('player-timer-container').classList.add('hidden');
-                    document.getElementById('player-wait').classList.remove('hidden'); 
-                    document.getElementById('player-wait-msg').innerText = "Schau rüber zum Bildschirm!";
-                } else { 
-                    document.getElementById('player-game').classList.remove('hidden'); 
-                    document.getElementById('player-timer-container').classList.remove('hidden');
-                }
-            }
-            else if (gameState.status === 'results') {
-                document.getElementById('player-game').classList.add('hidden');
-                document.getElementById('player-timer-container').classList.add('hidden');
-                document.getElementById('player-wait').classList.remove('hidden');
-                document.getElementById('player-wait-msg').innerText = "Blick zum Beamer...";
-            }
-            else if (gameState.status === 'podium') {
-                document.getElementById('player-game').classList.add('hidden');
-                document.getElementById('player-timer-container').classList.add('hidden');
-                document.getElementById('player-wait').classList.remove('hidden');
-                
-                const myRank = players.findIndex(p => p.id === currentUser.uid) + 1;
-                
-                if (myRank <= 3) {
-                    document.getElementById('player-wait-msg').innerHTML = `<h2 class="text-4xl font-black uppercase italic italic text-white">Danke fürs Mitmachen!</h2><p class="text-xl mt-4 text-white">Schau zum Podium!</p>`;
-                } else {
-                    document.getElementById('player-wait-msg').innerHTML = `
-                        <h2 class="text-4xl font-black uppercase italic italic text-white">Danke fürs Mitmachen!</h2>
-                        <div class="mt-8 bg-black/20 p-6 rounded-3xl">
-                            <p class="text-xl text-white/80 uppercase tracking-widest font-bold">Dein Ergebnis</p>
-                            <p class="text-6xl font-black text-white my-2">${me.score}</p>
-                            <p class="text-2xl font-bold text-white/90">Platz ${myRank}</p>
-                        </div>
-                    `;
-                }
-            }
-            else if (gameState.status === 'lobby') {
-                document.getElementById('player-wait').classList.remove('hidden');
-                document.getElementById('player-game').classList.add('hidden');
-                document.getElementById('player-timer-container').classList.add('hidden');
-                document.getElementById('player-wait-msg').innerText = "Schau rüber zum Bildschirm!";
             }
         }
 

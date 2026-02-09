@@ -116,7 +116,7 @@
     <script>
         // Deine neue, eingeschränkte Firebase Konfiguration
         const myFirebaseConfig = {
-            apiKey: "AIzaSyA6fF5qnutWU8H4CE6WcFqVoyCe6as5iiA", // NEUER KEY
+            apiKey: "AIzaSyA6fF5qnutWU8H4CE6WcFqVoyCe6as5iiA", // NEUER KEY INTEGRIERT
             authDomain: "quiz-stallion.firebaseapp.com",
             projectId: "quiz-stallion",
             storageBucket: "quiz-stallion.firebasestorage.app",
@@ -332,7 +332,7 @@
         const auth = getAuth(app);
         
         // Bump version to ensure fresh state
-        const appId = 'pixel10a-v29-final'; 
+        const appId = 'pixel10a-v30-final'; 
         const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameSession', 'mainState');
         const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
@@ -380,13 +380,15 @@
             const msgEl = document.getElementById('error-msg');
             
             // Check for identity toolkit error
-            if (msg.includes("identity-toolkit-api")) {
+            if (msg.includes("auth/configuration-not-found")) {
                 msgEl.innerHTML = `
-                    <b>WICHTIG: API nicht aktiviert!</b><br>
-                    Damit das Quiz funktioniert, musst du diese Einstellung einschalten:<br>
-                    <a href="https://console.cloud.google.com/apis/library/identitytoolkit.googleapis.com" target="_blank" style="text-decoration: underline; font-weight: bold;">
-                        HIER KLICKEN und auf "AKTIVIEREN" drücken
-                    </a>
+                    <b>WICHTIG: Authentication fehlt!</b><br>
+                    Du hast einen neuen Schlüssel, aber Firebase Auth noch nicht aktiviert.<br>
+                    <a href="https://console.firebase.google.com/project/quiz-stallion/authentication/providers" target="_blank" style="text-decoration: underline; font-weight: bold;">
+                        1. Hier klicken (Firebase Console)
+                    </a><br>
+                    2. Auf "Get started" klicken<br>
+                    3. "Anonymous" aktivieren & speichern.
                 `;
             } else if (msg.includes("auth/api-key-expired")) {
                 msgEl.innerHTML = `
